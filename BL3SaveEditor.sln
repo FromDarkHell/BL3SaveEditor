@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30330.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BL3SaveEditor", "BL3SaveEditor\BL3SaveEditor.csproj", "{A363B5AB-89B8-40F7-85A9-6A7341E183EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BL3Tools", "BL3Tools\BL3Tools.csproj", "{EEFEAB45-B558-4D33-9C74-D68660E26921}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CustomizationGenerator", "CustomizationGenerator\CustomizationGenerator.pyproj", "{0B16C2F4-E535-456C-9547-06328ED6A585}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A363B5AB-89B8-40F7-85A9-6A7341E183EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A363B5AB-89B8-40F7-85A9-6A7341E183EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A363B5AB-89B8-40F7-85A9-6A7341E183EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A363B5AB-89B8-40F7-85A9-6A7341E183EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B16C2F4-E535-456C-9547-06328ED6A585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B16C2F4-E535-456C-9547-06328ED6A585}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCA67F01-673D-4452-BB34-56C5F207DE42}
+	EndGlobalSection
+EndGlobal

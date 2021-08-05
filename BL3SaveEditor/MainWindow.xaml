@@ -1,0 +1,246 @@
+﻿<adonisControls:AdonisWindow x:Class="BL3SaveEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BL3SaveEditor"
+        xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers"
+        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+        xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:pg="clr-namespace:Xceed.Wpf.Toolkit.PropertyGrid;assembly=xceed.Wpf.Toolkit"
+        mc:Ignorable="d"
+        Title="Borderlands 3 Save Editor" Height="450" Width="800" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True" Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Window.Style>
+        <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}"/>
+    </Window.Style>
+    <Window.Resources>
+        <LinearGradientBrush x:Key="fdh"
+                             EndPoint="1,0.5"
+                             StartPoint="0,0.5">
+            <GradientStop Color="Red"
+                          Offset="0" />
+            <GradientStop Color="Gold"
+                          Offset="1.15" />
+        </LinearGradientBrush>
+        <helpers:IntegerSecondsToTimeSpanConverter x:Key="IntegerToSpanConverter1"/>
+        <helpers:EXPointToLevelConverter x:Key="EXPToLevelConverter1"/>
+        <helpers:LevelToEXPointConverter x:Key="LevelToEXPConverter1"/>
+        <helpers:StringToCharacterClassConverter x:Key="CharacterClassConverter1"/>
+        <helpers:CustomPlayerColorToColorConverter x:Key="CustomPlayerColorToColorConverter1"/>
+        <helpers:CustomizationToStringConverter x:Key="HeadCustomizationToStringConverter"/>
+        <helpers:CustomizationToStringConverter x:Key="SkinCustomizationToStringConverter"/>
+        <helpers:CurrencyToIntegerConverter x:Key="MoneyToIntegerConverter"/>
+        <helpers:CurrencyToIntegerConverter x:Key="EridiumToIntegerConverter"/>
+        <helpers:TravelStationConverter x:Key="TravelStationConverter1"/>
+        <helpers:PlaythroughToStringConverter x:Key="PlaythroughToStringConverter1"/>
+    </Window.Resources>
+
+    <adonisControls:AdonisWindow.TitleBarContent>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+
+            <Button Name="DbgBtn" DockPanel.Dock="Right" Click="DbgBtn_Click">
+                <StackPanel Orientation="Horizontal" >
+                    <Image Width="16" Height="16" Source="Icons\fugue\wrench-screwdriver.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
+                    <Label FontFamily="Segoe UI" FontSize="14" Content="Debug" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+            <Button Content="?"
+                    Style="{DynamicResource {x:Static adonisUi:Styles.WindowButton}}"
+                    FontFamily="Segoe UI"
+                    FontSize="14" Click="Info_Click"/>
+        </StackPanel>
+    </adonisControls:AdonisWindow.TitleBarContent>
+    <Grid>
+        <ToolBar x:Uid="ToolWindowToolbar" AllowDrop="False" Focusable="False" HorizontalAlignment="Left" VerticalAlignment="Top" Width="792" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" Height="30">
+            <Button Name="NewSaveBtn" Click="NewSaveBtn_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="16" Height="16" Source="Icons\fugue\document-binary.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
+                    <Label Content="New" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+            <Button Name="OpenSaveBtn" Click="OpenSaveBtn_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="16" Height="16" Source="Icons\fugue\folder-open-document.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
+
+                    <Label Content="Open" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+            <Button Name="SaveSaveBtn" Click="SaveSaveBtn_Click" IsEnabled="{Binding Path=bSaveLoaded}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="16" Height="16" Source="Icons\fugue\disk-black.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
+
+                    <Label Content="Save" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+            <Button Name="SaveAsSaveBtn" Click="SaveAsSaveBtn_Click" IsEnabled="{Binding Path=bSaveLoaded}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="16" Height="16" Source="Icons\fugue\disk--plus.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
+                    <Label Content="Save As" FontWeight="Medium"/>
+                </StackPanel>
+            </Button>
+
+            <Separator BorderThickness="1"/>
+
+        </ToolBar>
+
+        <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,30,0,0">
+            <TabItem Header="General">
+                <Grid>
+                    <Label FontWeight="Normal" Content="Save GUID:" HorizontalAlignment="Left" Margin="10,9,0,0" VerticalAlignment="Top"/>
+                    <TextBox Name="GUIDTextBox" IsEnabled="{Binding Path=bSaveLoaded}" Text="{Binding Path=saveGame.Character.SaveGameGuid, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="25" Margin="116,5,418,0" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="A randomly generated ID of your save; do not touch unless you know what you're doing"/>
+                    <Button Content="Randomize" Name="RandomizeGUIDBtn" Click="RandomizeGUIDBtn_Click" Margin="0,6,328,0" VerticalAlignment="Top" RenderTransformOrigin="2.353,0.208" HorizontalAlignment="Right" Width="85" ToolTip="Randomizes the GUID associated with your save"/>
+
+                    <Label FontWeight="Normal" Content="Save Game Slot:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top"/>
+                    <xctk:IntegerUpDown IsEnabled="{Binding Path=bSaveLoaded}" Value="{Binding Path=saveGame.Character.SaveGameId, Mode=TwoWay}" HorizontalAlignment="Stretch"  Margin="116,35,328,0" VerticalAlignment="Top" ToolTip="A number associated with your save; do not touch unless you know what you're doing"/>
+
+
+
+                    <Label FontWeight="Normal" Content="Total Time Played: " HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
+                    <xctk:TimeSpanUpDown IsEnabled="{Binding Path=bSaveLoaded}" Value="{Binding Path=saveGame.Character.TimePlayedSeconds, Mode=TwoWay, Converter={StaticResource IntegerToSpanConverter1}}" HorizontalAlignment="Stretch"  Margin="116,66,328,0" VerticalAlignment="Top" ToolTip="Format: Days.Hours:Minutes:Seconds"/>
+
+                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="210" Margin="10,115,613,0" VerticalAlignment="Top" IsExpanded="True">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="200">
+                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Skills" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports the skills from a different save"/>
+                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Missions" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports the mission data from a different save"/>
+                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import World" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports world/fast travel data from a different save"/>
+                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Stats" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports statistics / other data from a different save"/>
+                        </Grid>
+                    </Expander>
+                    <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="210" Margin="166,115,0,0" VerticalAlignment="Top" Width="170" IsExpanded="True">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="195">
+                            <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"  TextAlignment="Center" Width="170">
+                                <Run Text="This edits all saves at once."/>
+                                <LineBreak/>
+                                <Run Text="Please make backups."/>
+                            </TextBlock>
+
+                            <Button Name="AdjustSaveLevelsBtn" Content="Adjust Save Levels" HorizontalAlignment="Left" Margin="20,40,0,0" VerticalAlignment="Top" Width="130" ToolTip="Adjusts the gear and save levels of all of the saves in a folder."/>
+                            <Button Content="Inject Guardian Rank" HorizontalAlignment="Left" Margin="20,69,0,0" VerticalAlignment="Top" Width="130" RenderTransformOrigin="0.5,0.083" ToolTip="Inserts guardian rank data into all of your saves in a folder"/>
+                            <Button Content="Backup All Saves" HorizontalAlignment="Left" Margin="20,98,0,0" VerticalAlignment="Top" Width="130" RenderTransformOrigin="0.5,0.083" ToolTip="Backs up all of your saves into a zip file for easier backing up"/>
+                        </Grid>
+                    </Expander>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Character" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="73" Margin="0,0,-15,0">
+                <Grid>
+                    <Expander IsExpanded="True" Header="Character &amp; Currency" HorizontalAlignment="Left" Height="160" Margin="10,10,0,0" VerticalAlignment="Top" Width="764">
+                        <Grid Height="140" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="764">
+                            <Label FontWeight="Normal" Content="Class: " Margin="10,10,666,106" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                            <ComboBox IsEnabled="{Binding Path=bSaveLoaded}" ItemsSource="{Binding Path=ValidPlayerClasses}" SelectedValue="{Binding Path=saveGame.Character.PlayerClassData, Mode=TwoWay, Converter={StaticResource CharacterClassConverter1}}" HorizontalAlignment="Stretch" Margin="116,11,405,0" VerticalAlignment="Top"/>
+
+                            <Label FontWeight="Normal" Content="XP Level: " Margin="10,36,668,80" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" RenderTransformOrigin="0.5,0.5"/>
+                            <xctk:IntegerUpDown IsEnabled="{Binding Path=bSaveLoaded}" Value="{Binding Path=saveGame.Character.ExperiencePoints, Mode=TwoWay, Converter={StaticResource EXPToLevelConverter1}}" HorizontalAlignment="Stretch"  Margin="116,40,405,0" VerticalAlignment="Top" ToolTip="XP Level of your save" Maximum="{Binding Path=maximumXP}" Minimum="{Binding Path=minimumXP}"/>
+
+                            <Label FontWeight="Normal" Content="Mayhem Level: " Margin="10,65,666,51" VerticalContentAlignment="Center"/>
+                            <xctk:IntegerUpDown IsEnabled="{Binding bSaveLoaded}" Value="{Binding saveGame.Character.MayhemLevel, Mode=TwoWay}" HorizontalAlignment="Stretch"  Margin="116,69,405,0" VerticalAlignment="Top" ToolTip="Mayhem Level of your current save" Maximum="{Binding maximumMayhemLevel}" Minimum="0"/>
+
+                            <Label FontWeight="Normal" Content="Skill Points: " Margin="10,94,666,22" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                            <xctk:IntegerUpDown IsEnabled="{Binding bSaveLoaded}" Value="{Binding saveGame.Character.AbilityData.AbilityPoints, Mode=TwoWay}" HorizontalAlignment="Stretch"  Margin="116,98,405,0" VerticalAlignment="Top" ToolTip="Current skill points available on the save" Minimum="0"/>
+
+                            <Expander Header="Currency" Margin="376,10,10,10" IsExpanded="True">
+                                <Grid Height="99">
+                                    <Label FontWeight="Normal" Content="Money: " HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="20" Width="50"/>
+                                    <xctk:IntegerUpDown IsEnabled="{Binding Path=bSaveLoaded}" Value="{Binding Path=saveGame.Character, Mode=TwoWay, Converter={StaticResource MoneyToIntegerConverter}, ConverterParameter=money}" HorizontalAlignment="Stretch"  Margin="70,10,23,0" VerticalAlignment="Top" ToolTip="Amount of money you have" Minimum="0"/>
+                                    <Label FontWeight="Normal" Content="Eridium: " HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top" Height="20"/>
+                                    <xctk:IntegerUpDown IsEnabled="{Binding bSaveLoaded}" Value="{Binding saveGame.Character, Converter={StaticResource EridiumToIntegerConverter}, ConverterParameter=eridium, Mode=TwoWay}" HorizontalAlignment="Stretch"  Margin="70,38,23,0" VerticalAlignment="Top" ToolTip="Amount of eridium you currently have" Minimum="0"/>
+
+                                </Grid>
+                            </Expander>
+                        </Grid>
+                    </Expander>
+                    <Expander IsExpanded="True" Header="Customization" HorizontalAlignment="Left" Height="160" Margin="10,175,0,0" VerticalAlignment="Top" Width="764">
+                        <Grid Height="140" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="764">
+                            <Label FontWeight="Normal" Content="Character Name: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10,10,648,107"/>
+                            <TextBox HorizontalAlignment="Left" Height="23" Margin="121,10,0,0" TextWrapping="Wrap" IsEnabled="{Binding bSaveLoaded}" Text="{Binding Path=saveGame.Character.PreferredCharacterName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="235"/>
+                            <Label FontWeight="Normal" Content="Head: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10,40,648,77"/>
+                            <ComboBox Name="PlayerHeadBox" IsEnabled="{Binding bSaveLoaded}" ItemsSource="{Binding Path=ValidPlayerHeads}" SelectedValue="{Binding saveGame.Character, Converter={StaticResource HeadCustomizationToStringConverter}, ConverterParameter=heads}"  HorizontalAlignment="Left" Margin="121,38,0,0" VerticalAlignment="Top" Width="235"/>
+
+                            <Label FontWeight="Normal" Content="Skin: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10,68,648,49"/>
+                            <ComboBox Name="PlayerSkinBox" IsEnabled="{Binding bSaveLoaded}" ItemsSource="{Binding Path=ValidPlayerSkins}" SelectedValue="{Binding saveGame.Character, Converter={StaticResource SkinCustomizationToStringConverter}, ConverterParameter=skins}" HorizontalAlignment="Left" Margin="121,67,0,0" VerticalAlignment="Top" Width="235"/>
+
+                            <Label FontWeight="Normal" Content="Color 1: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="371,10,338,107"/>
+                            <xctk:ColorPicker UsingAlphaChannel="False" Margin="426,10,228,107" RenderTransformOrigin="0.455,0.826" IsEnabled="{Binding bSaveLoaded}" SelectedColor="{Binding saveGame.Character.SelectedColorCustomizations[0], Mode=TwoWay, Converter={StaticResource CustomPlayerColorToColorConverter1}, ConverterParameter=*Color_Primary1}"/>
+                            <Label FontWeight="Normal" Content="Color 2: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="371,39,338,78"/>
+                            <Label FontWeight="Normal" Content="Color 3: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="371,67,338,50"/>
+                            <xctk:ColorPicker UsingAlphaChannel="False" Margin="426,40,228,77" RenderTransformOrigin="0.455,0.826" IsEnabled="{Binding bSaveLoaded}" SelectedColor="{Binding saveGame.Character.SelectedColorCustomizations[0], ConverterParameter=*Color_Secondary1, Converter={StaticResource CustomPlayerColorToColorConverter1}, Mode=TwoWay}"/>
+                            <xctk:ColorPicker UsingAlphaChannel="False" Margin="426,67,228,50" RenderTransformOrigin="0.455,0.826" IsEnabled="{Binding bSaveLoaded}" SelectedColor="{Binding saveGame.Character.SelectedColorCustomizations[2], ConverterParameter=*Color_Tertiary1, Converter={StaticResource CustomPlayerColorToColorConverter1}, Mode=TwoWay}"/>
+                        </Grid>
+                    </Expander>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Fast Travel" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="75" Margin="0,0,-17,0">
+                <Grid>
+                    <GroupBox Name="VisitedTeleportersGrpBox" HorizontalAlignment="Stretch" Margin="0,0,198,0" >
+                        <GroupBox.Header>
+                            <Grid Height="25" HorizontalAlignment="Stretch" Margin="0,0,0,0">
+                                <Label Content="Visited Teleporters" Margin="10,1,428,0" VerticalContentAlignment="Center"/>
+
+                                <ComboBox Name="SelectedPlaythroughBox" IsEnabled="{Binding bSaveLoaded}" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer4BackgroundBrush}}" Foreground="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" ItemsSource="{Binding Path=saveGame.Character, Converter={StaticResource PlaythroughToStringConverter1}, ConverterParameter=list}" SelectedValue="{Binding Path=saveGame.Character, Converter={StaticResource PlaythroughToStringConverter1}, ConverterParameter=value, Mode=OneWay}" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="-1.376,0.25" Height="25"/>
+
+                            </Grid>
+                        </GroupBox.Header>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Name="TeleportersItmCntrl">
+                                <ItemsControl.ItemsSource>
+                                    <MultiBinding Converter="{StaticResource TravelStationConverter1}">
+                                        <Binding Path="saveGame.Character" Mode="TwoWay"/>
+                                        <Binding Path="showDebugMaps" Mode="TwoWay"/>
+                                        <Binding ElementName="SelectedPlaythroughBox" Path="SelectedIndex" Mode="OneWay"/>
+                                    </MultiBinding>
+                                </ItemsControl.ItemsSource>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Name="FastTravelChkBx" Checked="FastTravelChkBx_StateChanged" Unchecked="FastTravelChkBx_StateChanged" IsChecked="{Binding Path=booleanVar, Mode=TwoWay}">
+                                            <TextBlock FontSize="13" Margin="10 0 0 0" Text="{Binding Path=Value}"/>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </GroupBox>
+
+                    <CheckBox Name="DbgMapBox" IsEnabled="{Binding bSaveLoaded}" IsChecked="{Binding Path=showDebugMaps, Mode=TwoWay}" Content="Show Debug Travels" HorizontalAlignment="Right" Margin="0,10,28,0" VerticalAlignment="Top" Height="24" Width="130" Unchecked="DbgMapBox_StateChange" Checked="DbgMapBox_StateChange"/>
+                    <Button Name="EnableAllTeleportersBtn" IsEnabled="{Binding bSaveLoaded}" Click="EnableAllTeleportersBtn_Click" Content="Enable All Visible" HorizontalAlignment="Right" Margin="0,51,28,0" VerticalAlignment="Top" Width="130"/>
+
+                    <Button Name="DisableAllTeleportersBtn" IsEnabled="{Binding bSaveLoaded}" Click="DisableAllTeleportersBtn_Click" Content="Disable All Visible" HorizontalAlignment="Right" Margin="0,91,28,0" VerticalAlignment="Top" Width="130"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Backpack" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="65">
+                <Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Raw" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="40">
+                <Grid Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}">
+                    <xctk:PropertyGrid IsEnabled="{Binding bSaveLoaded}" SelectedObject="{Binding Path=saveGame.Character}" ShowTitle="False" IsReadOnly="False" AutoGenerateProperties="True" Style="{StaticResource PropertyGridStyle}">
+                    </xctk:PropertyGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="About" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="60">
+                <Grid Margin="0,0,-6,-5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,6,5">
+                        <Run Text="Developed by "/><Hyperlink NavigateUri="http://fdh.one" TextDecorations="Underline" Foreground="{StaticResource fdh}"><Run Text="FromDarkHell"/></Hyperlink>
+                        <LineBreak/>
+                        <Run Text="Thanks to: "/>
+                        <LineBreak/>
+                        
+                        <Run Text="- Gibbed, apocalyptech, and others"/>
+                    </TextBlock>
+
+
+
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom">
+                        <Run Foreground="MediumPurple" Text="In memory of Baysix. Fly high."/>
+                    </TextBlock>
+                    <CheckBox Name="DarkModeBox" Content="Enable Dark Mode" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938" IsChecked="True" Height="20" Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</adonisControls:AdonisWindow>

@@ -1,0 +1,3 @@
+[submodule "BL3Tools/Protobufs"]
+	path = BL3Tools/Protobufs
+	url = https://github.com/gibbed/Borderlands3Protos
