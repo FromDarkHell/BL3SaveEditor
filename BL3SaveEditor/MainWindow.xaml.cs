@@ -72,6 +72,8 @@ namespace BL3SaveEditor {
                 return new CollectionView(skinNames);
             }
         }
+        public int MaximumBankSDUs { get { return SDU.MaximumBankSDUs;  } }
+        public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot;  } }
         #endregion
 
         private static Debug.DebugConsole dbgConsole;
@@ -101,6 +103,11 @@ namespace BL3SaveEditor {
             DarkModeBox_Checked(darkBox, null);
 
             dbgConsole = new Debug.DebugConsole();
+
+            ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count-1;
+
+            var x = BL3Tools.GameData.Items.Borderlands3Serial.DecryptSerial("BL3(AwAAAACxlIC1y1QBE0QesjkdMfnY444QAAAAAACADAg=)");
+            Console.WriteLine("Test...");
         }
 
         #region Toolbar Interaction
@@ -132,7 +139,9 @@ namespace BL3SaveEditor {
                 }
             }
 
-
+            ((TabItem)FindName("RawTabItem")).IsEnabled = true;
+            ((Button)FindName("SaveSaveBtn")).IsEnabled = true;
+            ((Button)FindName("SaveAsSaveBtn")).IsEnabled = true;
 
             // Refresh the bindings on the GUI
             DataContext = null;
@@ -267,6 +276,8 @@ namespace BL3SaveEditor {
                 chkBox.IsChecked = false;
             }
         }
+
+
 
         #endregion
 

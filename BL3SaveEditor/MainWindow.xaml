@@ -11,7 +11,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:pg="clr-namespace:Xceed.Wpf.Toolkit.PropertyGrid;assembly=xceed.Wpf.Toolkit"
         mc:Ignorable="d"
-        Title="Borderlands 3 Save Editor" Height="450" Width="800" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True" Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        Title="Borderlands 3 Save Editor" Height="457" Width="819" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True" Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.Style>
         <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}"/>
     </Window.Style>
@@ -35,6 +35,10 @@
         <helpers:CurrencyToIntegerConverter x:Key="EridiumToIntegerConverter"/>
         <helpers:TravelStationConverter x:Key="TravelStationConverter1"/>
         <helpers:PlaythroughToStringConverter x:Key="PlaythroughToStringConverter1"/>
+
+        <helpers:GuardianRankToDataGridConverter x:Key="GuardianRankToDataGridConverter1"/>
+        <helpers:ProfileSDUToIntegerConverter x:Key="SDUConverter1"/>
+        <helpers:MultiElementObjectBinder x:Key="MultiElementObjectBinder1"/>
     </Window.Resources>
 
     <adonisControls:AdonisWindow.TitleBarContent>
@@ -68,14 +72,14 @@
                     <Label Content="Open" FontWeight="Medium"/>
                 </StackPanel>
             </Button>
-            <Button Name="SaveSaveBtn" Click="SaveSaveBtn_Click" IsEnabled="{Binding Path=bSaveLoaded}">
+            <Button Name="SaveSaveBtn" IsEnabled="False" Click="SaveSaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="16" Height="16" Source="Icons\fugue\disk-black.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
 
                     <Label Content="Save" FontWeight="Medium"/>
                 </StackPanel>
             </Button>
-            <Button Name="SaveAsSaveBtn" Click="SaveAsSaveBtn_Click" IsEnabled="{Binding Path=bSaveLoaded}">
+            <Button Name="SaveAsSaveBtn" IsEnabled="False" Click="SaveAsSaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="16" Height="16" Source="Icons\fugue\disk--plus.png" Margin="0 0 5 0" RenderOptions.BitmapScalingMode="Fant"/>
                     <Label Content="Save As" FontWeight="Medium"/>
@@ -86,9 +90,10 @@
 
         </ToolBar>
 
-        <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,30,0,0">
-            <TabItem Header="General">
+        <TabControl Name="TabCntrl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,30,0,0">
+            <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}" Header="General">
                 <Grid>
+
                     <Label FontWeight="Normal" Content="Save GUID:" HorizontalAlignment="Left" Margin="10,9,0,0" VerticalAlignment="Top"/>
                     <TextBox Name="GUIDTextBox" IsEnabled="{Binding Path=bSaveLoaded}" Text="{Binding Path=saveGame.Character.SaveGameGuid, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="25" Margin="116,5,418,0" TextWrapping="Wrap" VerticalAlignment="Top" ToolTip="A randomly generated ID of your save; do not touch unless you know what you're doing"/>
                     <Button Content="Randomize" Name="RandomizeGUIDBtn" Click="RandomizeGUIDBtn_Click" Margin="0,6,328,0" VerticalAlignment="Top" RenderTransformOrigin="2.353,0.208" HorizontalAlignment="Right" Width="85" ToolTip="Randomizes the GUID associated with your save"/>
@@ -101,7 +106,7 @@
                     <Label FontWeight="Normal" Content="Total Time Played: " HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
                     <xctk:TimeSpanUpDown IsEnabled="{Binding Path=bSaveLoaded}" Value="{Binding Path=saveGame.Character.TimePlayedSeconds, Mode=TwoWay, Converter={StaticResource IntegerToSpanConverter1}}" HorizontalAlignment="Stretch"  Margin="116,66,328,0" VerticalAlignment="Top" ToolTip="Format: Days.Hours:Minutes:Seconds"/>
 
-                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="210" Margin="10,115,613,0" VerticalAlignment="Top" IsExpanded="True">
+                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="220" Margin="10,115,613,0" VerticalAlignment="Top" IsExpanded="True">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="200">
                             <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Skills" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports the skills from a different save"/>
                             <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Missions" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports the mission data from a different save"/>
@@ -109,7 +114,7 @@
                             <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Stats" HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Width="130" ToolTip="Imports statistics / other data from a different save"/>
                         </Grid>
                     </Expander>
-                    <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="210" Margin="166,115,0,0" VerticalAlignment="Top" Width="170" IsExpanded="True">
+                    <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="220" Margin="166,115,0,0" VerticalAlignment="Top" Width="170" IsExpanded="True">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="195">
                             <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"  TextAlignment="Center" Width="170">
                                 <Run Text="This edits all saves at once."/>
@@ -122,10 +127,9 @@
                             <Button Content="Backup All Saves" HorizontalAlignment="Left" Margin="20,98,0,0" VerticalAlignment="Top" Width="130" RenderTransformOrigin="0.5,0.083" ToolTip="Backs up all of your saves into a zip file for easier backing up"/>
                         </Grid>
                     </Expander>
-
                 </Grid>
             </TabItem>
-            <TabItem Header="Character" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="73" Margin="0,0,-15,0">
+            <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}" Header="Character" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="73" Margin="0,0,-15,0">
                 <Grid>
                     <Expander IsExpanded="True" Header="Character &amp; Currency" HorizontalAlignment="Left" Height="160" Margin="10,10,0,0" VerticalAlignment="Top" Width="764">
                         <Grid Height="140" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="764">
@@ -173,7 +177,7 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="Fast Travel" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="75" Margin="0,0,-17,0">
+            <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}" Header="Fast Travel" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="75" Margin="0,0,-17,0">
                 <Grid>
                     <GroupBox Name="VisitedTeleportersGrpBox" HorizontalAlignment="Stretch" Margin="0,0,198,0" >
                         <GroupBox.Header>
@@ -211,14 +215,73 @@
                     <Button Name="DisableAllTeleportersBtn" IsEnabled="{Binding bSaveLoaded}" Click="DisableAllTeleportersBtn_Click" Content="Disable All Visible" HorizontalAlignment="Right" Margin="0,91,28,0" VerticalAlignment="Top" Width="130"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Backpack" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="65">
+            <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}" Header="Backpack" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="65">
                 <Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Raw" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="40">
-                <Grid Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}">
-                    <xctk:PropertyGrid IsEnabled="{Binding bSaveLoaded}" SelectedObject="{Binding Path=saveGame.Character}" ShowTitle="False" IsReadOnly="False" AutoGenerateProperties="True" Style="{StaticResource PropertyGridStyle}">
+            <TabItem Name="RawTabItem" IsEnabled="False" Header="Raw" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="40">
+                <Grid Background="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}">
+                    <xctk:PropertyGrid ShowTitle="False" IsReadOnly="False" AutoGenerateProperties="True" Style="{StaticResource PropertyGridStyle}">
+                        <xctk:PropertyGrid.SelectedObject>
+                            <MultiBinding Converter="{StaticResource MultiElementObjectBinder1}">
+                                <Binding Path="saveGame.Character"/>
+                                <Binding Path="profile.Profile"/>
+                            </MultiBinding>
+                        </xctk:PropertyGrid.SelectedObject>
+                        <xctk:PropertyGrid.EditorDefinitions>
+                                <xctk:EditorTemplateDefinition TargetProperties="LostLootInventoryLists">
+                                    <xctk:EditorTemplateDefinition.EditingTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="[Unsupported]" />
+                                        </DataTemplate>
+                                    </xctk:EditorTemplateDefinition.EditingTemplate>
+                                </xctk:EditorTemplateDefinition>
+                        </xctk:PropertyGrid.EditorDefinitions>
                     </xctk:PropertyGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Profile" IsEnabled="{Binding profile, TargetNullValue=False}" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="60">
+                <Grid Margin="-10,-10,-6,-5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <DataGrid ItemsSource="{Binding Path=profile.Profile, Converter={StaticResource GuardianRankToDataGridConverter1}, Mode=TwoWay}" AutoGenerateColumns="False" Margin="10,10,424,10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Path=str}" Width="*"/>
+                            <DataGridTemplateColumn Header="Spent Tokens" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <xctk:IntegerUpDown Value="{Binding Path=Value}" Minimum="0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Expander IsExpanded="True" Header="Customizations" Margin="0,10,10,247" HorizontalAlignment="Right" Width="409">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0">
+                            <Button Content="Unlock Room Decorations" Margin="0,0,244,55" HorizontalAlignment="Right" Width="155" Height="30" VerticalAlignment="Bottom"/>
+                            <Button Content="Lock Room Decorations" Margin="0,0,244,20" HorizontalAlignment="Right" Width="155" Height="30" VerticalAlignment="Bottom"/>
+
+                            <Button Content="Unlock Customizations" Margin="244,0,0,55" HorizontalAlignment="Left" Width="155" Height="30" VerticalAlignment="Bottom"/>
+                            <Button Content="Lock Decorations" Margin="244,0,0,20" HorizontalAlignment="Left" Width="155" Height="30" VerticalAlignment="Bottom"/>
+                        </Grid>
+                    </Expander>
+                    <xctk:IntegerUpDown Value="{Binding Path=profile.Profile.GuardianRank.AvailableTokens, Mode=TwoWay}" HorizontalAlignment="Right"  Margin="0,125,10,0" VerticalAlignment="Top" ToolTip="The amount of tokens you have unspent on your profile" Width="254"/>
+                    <Label FontWeight="Normal" Content="Unspent Tokens: " HorizontalAlignment="Right" Margin="0,125,309,0" VerticalAlignment="Top" Width="105" Height="20"/>
+                    <Label FontWeight="Normal" Content="Guardian Rank: " HorizontalAlignment="Right" Margin="0,150,309,0" VerticalAlignment="Top" Width="100" Height="20"/>
+
+                    <xctk:IntegerUpDown Value="{Binding Path=profile.Profile.GuardianRank.GuardianRank, Mode=TwoWay}" HorizontalAlignment="Right"  Margin="0,150,10,0" VerticalAlignment="Top" ToolTip="Guardian Rank associated with your profile" Width="254"/>
+                    <Label FontWeight="Normal" Content="Guardian XP: " HorizontalAlignment="Right" Margin="0,175,309,0" VerticalAlignment="Top" Width="100" Height="20"/>
+                    <xctk:LongUpDown Value="{Binding profile.Profile.GuardianRank.NewGuardianExperience, Mode=TwoWay}" HorizontalAlignment="Right"  Margin="0,175,10,0" VerticalAlignment="Top" ToolTip="Amount of XP associated with your guardian rank level" Width="254"/>
+                    <Label FontWeight="Normal" Content="Bank SDUs: " HorizontalAlignment="Right" Margin="0,260,309,0" VerticalAlignment="Top" Width="100" Height="20"/>
+                    <xctk:IntegerUpDown Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=Bank}" Minimum="0" Maximum="{Binding MaximumBankSDUs}" HorizontalAlignment="Right"  Margin="0,260,10,0" VerticalAlignment="Top" ToolTip="Amount of Bank SDUs on your character" Width="254"/>
+
+                    <Label FontWeight="Normal" Content="Lost Loot SDUs: " HorizontalAlignment="Right" Margin="0,285,309,0" VerticalAlignment="Top" Width="100" Height="20"/>
+                    <xctk:IntegerUpDown Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=LostLoot}" Minimum="0" Maximum="{Binding MaximumLostLootSDUs}" HorizontalAlignment="Right"  Margin="0,285,10,0" VerticalAlignment="Top" ToolTip="Amount of Lost Loot SDUs on your profile" Width="254"/>
+                    <Label FontWeight="Normal" Content="Citizen Science Bucks: " HorizontalAlignment="Right" Margin="0,210,284,0" VerticalAlignment="Top" Width="125" Height="20"/>
+                    <xctk:LongUpDown Value="{Binding profile.Profile.CitizenScienceCSBucksAmount, Mode=TwoWay}" HorizontalAlignment="Right"  Margin="0,210,10,0" VerticalAlignment="Top" ToolTip="Amount of XP associated with your guardian rank level" Width="254"/>
+                    <Label FontWeight="Normal" Content="Golden Keys: " HorizontalAlignment="Right" Margin="0,235,284,0" VerticalAlignment="Top" Width="125" Height="20"/>
+                    <xctk:LongUpDown Value="{Binding profile.Profile, Mode=TwoWay}" HorizontalAlignment="Right"  Margin="0,235,10,0" VerticalAlignment="Top" ToolTip="Amount of XP associated with your guardian rank level" Width="254"/>
+                    <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,320,304,0" Width="105" Height="24" VerticalAlignment="Top"/>
+                    <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,320,159,0" Width="105" Height="24" VerticalAlignment="Top"/>
+                    <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,320,10,0" Width="125" Height="24" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="About" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="60">

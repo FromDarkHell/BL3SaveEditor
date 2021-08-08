@@ -1,11 +1,11 @@
 ﻿using BL3Tools.GVAS;
 using OakSave;
-using PackageIO;
+using IOTools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BL3Tools {
 
@@ -14,7 +14,7 @@ namespace BL3Tools {
 
         #region Reading/Writing UE Strings
 
-        public static string ReadUEString(this IO io) {
+        public static string ReadUEString(this IOWrapper io) {
             if (io.PeekChar() < 0) return null;
             int length = io.ReadInt32();
             if (length == 0) return null;
@@ -23,7 +23,7 @@ namespace BL3Tools {
             return Utf8.GetString(valueBytes, 0, valueBytes.Length - 1);
         }
 
-        public static void WriteUEString(this IO io, string str) {
+        public static void WriteUEString(this IOWrapper io, string str) {
             if (str == null) io.WriteInt32(0);
             else if (string.Empty.Equals(str)) io.WriteInt32(1);
             else {
@@ -37,7 +37,7 @@ namespace BL3Tools {
 
         #region Reading/Writing GVAS Format
 
-        public static GVASSave ReadGVASSave(IO io) {
+        public static GVASSave ReadGVASSave(IOWrapper io) {
             string header = io.ReadASCII(4);
             if (!header.Equals("GVAS")) return null;
             Console.WriteLine("Header: {0}", header);
@@ -72,7 +72,7 @@ namespace BL3Tools {
             return saveData;
         }
 
-        public static void WriteGVASSave(IO io, GVASSave saveData) {
+        public static void WriteGVASSave(IOWrapper io, GVASSave saveData) {
             io.WriteASCII("GVAS");
             io.WriteInt32(saveData.sg);
             io.WriteInt32(saveData.pkg);
@@ -98,5 +98,46 @@ namespace BL3Tools {
             return result;
         }
 
+        public static T[] ConcatArrays<T>(params T[][] list) {
+            var result = new T[list.Sum(a => a.Length)];
+            int offset = 0;
+            for (int x = 0; x < list.Length; x++) {
+                list[x].CopyTo(result, offset);
+                offset += list[x].Length;
+            }
+            return result;
+        }
+
+        public static T FromByteArray<T>(byte[] rawValue) {
+            GCHandle handle = GCHandle.Alloc(rawValue, GCHandleType.Pinned);
+            T structure = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+            handle.Free();
+            return structure;
+        }
+
+        public static byte[] ToByteArray(object value, int maxLength) {
+            int rawsize = Marshal.SizeOf(value);
+            byte[] rawdata = new byte[rawsize];
+            GCHandle handle =
+                GCHandle.Alloc(rawdata,
+                GCHandleType.Pinned);
+            Marshal.StructureToPtr(value,
+                handle.AddrOfPinnedObject(),
+                false);
+            handle.Free();
+            if (maxLength < rawdata.Length) {
+                byte[] temp = new byte[maxLength];
+                Array.Copy(rawdata, temp, maxLength);
+                return temp;
+            }
+            else {
+                return rawdata;
+            }
+        }
+    }
+
+    public enum EndianMode {
+        Little = 0x00,
+        Big = 0x01
     }
 }

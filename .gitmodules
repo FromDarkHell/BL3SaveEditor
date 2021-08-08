@@ -1,3 +1,9 @@
 [submodule "BL3Tools/Protobufs"]
 	path = BL3Tools/Protobufs
 	url = https://github.com/gibbed/Borderlands3Protos
+[submodule "BL3Tools/GameData/Items/SerialDB"]
+	path = BL3Tools/GameData/Items/SerialDB
+	url = https://github.com/gibbed/Borderlands3Dumps
+[submodule "IOTools"]
+	path = IOTools
+	url = https://github.com/FromDarkHell/IOTools

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BL3Tools", "BL3Tools\BL3Too
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CustomizationGenerator", "CustomizationGenerator\CustomizationGenerator.pyproj", "{0B16C2F4-E535-456C-9547-06328ED6A585}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOTools", "IOTools\IOTools.csproj", "{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0B16C2F4-E535-456C-9547-06328ED6A585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0B16C2F4-E535-456C-9547-06328ED6A585}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

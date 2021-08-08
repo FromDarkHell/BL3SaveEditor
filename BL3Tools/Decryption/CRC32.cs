@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Globalization;
 
 namespace BL3Tools.Decryption {
     /// <summary>
     /// Performs 32-bit reversed cyclic redundancy checks.
     /// </summary>
-    class CRC32 {
+    public class CRC32 {
         #region Fields
         /// <summary>
         /// Contains a cache of calculated checksum chunks.
@@ -58,6 +60,8 @@ namespace BL3Tools.Decryption {
             }
             return hash;
         }
+
         #endregion
     }
+
 }

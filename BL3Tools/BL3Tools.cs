@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using PackageIO;
+using IOTools;
 using ProtoBuf;
 using BL3Tools.GVAS;
 using BL3Tools.Decryption;
@@ -13,27 +13,37 @@ namespace BL3Tools {
         public class BL3Exceptions {
             public class InvalidSaveException : Exception {
                 public InvalidSaveException() : base("Invalid BL3 Save") { }
-
                 public InvalidSaveException(string saveGameType) : base(String.Format("Invalid BL3 Save Game Type: {0}", saveGameType)) { }
             }
 
+
+            public class SerialParseException : Exception {
+                public SerialParseException() : base("Invalid BL3 Serial...") { }
+                public SerialParseException(string serial) : base(String.Format("Invalid Serial: {0}", serial)) { }
+                public SerialParseException(string serial, int version) : base(String.Format("Invalid Serial: \"{0}\"; Version: {1}", serial, version)) { }
+                public SerialParseException(string serial, int version, uint originalChecksum, uint calculatedChecksum) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Checksum Difference: {2} vs {3}", serial, version, originalChecksum, calculatedChecksum)) { }
+
+                public SerialParseException(string serial, int version, int databaseVersion) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}", serial, version, databaseVersion)) { }
+
+                public SerialParseException(string serial, int version, int databaseVersion, string oddity) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}; Error: {3}", serial, version, databaseVersion, oddity)) { }
+
+            }
         }
 
         public static UE3Save LoadFileFromDisk(string filePath, bool bBackup = true) {
             UE3Save saveGame = null;
             Console.WriteLine("Reading new file: \"{0}\"", filePath);
+            FileStream fs = new FileStream(filePath, FileMode.Open);
 
-            IO io = new IO(filePath, Endian.Little, 0x0000000, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            IOWrapper io = new IOWrapper(fs, Endian.Little, 0x0000000);
             try {
                 if (bBackup) {
                     // Gonna use this byte array for backing up the save file
                     byte[] originalBytes = io.ReadAll();
-                    io.Close();
+                    io.Seek(0);
+
                     // Backup the file
                     File.WriteAllBytes(filePath + ".bak", originalBytes);
-
-                    // Restore the IO object back
-                    io = new IO(filePath, Endian.Little, 0x0000000, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
                 }
 
                 GVASSave saveData = Helpers.ReadGVASSave(io);
@@ -79,7 +89,8 @@ namespace BL3Tools {
 
         public static bool WriteFileToDisk(string filePath, UE3Save ue3Save) {
             Console.WriteLine("Writing file to disk...");
-            IO io = new IO(filePath, Endian.Little, 0x0000000, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            FileStream fs = new FileStream(filePath, FileMode.Create);
+            IOWrapper io = new IOWrapper(fs, Endian.Little, 0x0000000);
             try {
                 Helpers.WriteGVASSave(io, ue3Save.GVASData);
                 byte[] result;

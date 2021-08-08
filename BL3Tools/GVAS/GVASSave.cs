@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using PackageIO;
+﻿using System.Collections.Generic;
 
 namespace BL3Tools.GVAS {
     public class GVASSave {

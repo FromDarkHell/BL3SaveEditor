@@ -1,4 +1,6 @@
-﻿using BL3Tools.GVAS;
+﻿using BL3Tools.GameData.Items;
+using BL3Tools.GVAS;
+using System.Linq;
 using OakSave;
 using System.Collections.Generic;
 
@@ -12,14 +14,18 @@ namespace BL3Tools {
 
         public GVASSave GVASData { get; set; }
     }
+
     public class BL3Save : UE3Save {
         public BL3Save(GVASSave saveData, Character character) {
             GVASData = saveData;
             Character = character;
-
+            
+            InventoryItems = Character.InventoryItems.Select(x => Borderlands3Serial.DecryptSerial(x.ItemSerialNumber)).ToList();
         }
 
-        public Character Character { get; set; }
+        public Character Character { get; set; } = null;
+
+        public List<Borderlands3Serial> InventoryItems { get; set; } = null;
 
         public static Dictionary<string, PlayerClassSaveGameData> ValidClasses = new Dictionary<string, PlayerClassSaveGameData>() {
             { "FL4K", new PlayerClassSaveGameData() {

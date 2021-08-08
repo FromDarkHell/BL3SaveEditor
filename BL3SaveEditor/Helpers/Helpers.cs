@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
@@ -7,6 +8,7 @@ using BL3Tools;
 using BL3Tools.GameData;
 using OakSave;
 using System.Windows.Media;
+using System.Collections.ObjectModel;
 
 namespace BL3SaveEditor.Helpers {
 
@@ -309,6 +311,91 @@ namespace BL3SaveEditor.Helpers {
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             return chx;
+        }
+    }
+
+    public class GuardianRankToDataGridConverter : IValueConverter {
+        private Profile prf = null;
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            ObservableCollection<StringIntPair> pairs = new ObservableCollection<StringIntPair>();
+            if (value != null) {
+                prf = (Profile)value;
+
+                foreach(string humanName in DataPathTranslations.GuardianRankRewards.Values) {
+                    bool bUpdatedRankData = false;
+                    foreach(GuardianRankRewardSaveGameData rankData in prf.GuardianRank.RankRewards) {
+                        string human = DataPathTranslations.GetHumanRewardString(rankData.RewardDataPath);
+                        if(human == humanName) {
+                            Console.WriteLine("Rank Data ({0}): {1}", humanName, rankData.NumTokens);
+                            pairs.Add(new StringIntPair(humanName, rankData.NumTokens));
+                            bUpdatedRankData = true;
+                            break;
+                        }
+                    }
+
+                    if (!bUpdatedRankData) pairs.Add(new StringIntPair(humanName, 0));
+                }
+            }
+
+            return pairs;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            return prf;
+        }
+    }
+
+    public class ProfileSDUToIntegerConverter : IValueConverter {
+        private Profile prf = null;
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            int amountOfSDUs = 0;
+            if(value != null && parameter != null) {
+                prf = (Profile)value;
+                string assetPath = ((string)parameter) == "LostLoot" ? DataPathTranslations.LLSDUAssetPath : DataPathTranslations.BankSDUAssetPath;
+
+                return prf.ProfileSduLists.Where(x => x.SduDataPath == assetPath).Select(x => x.SduLevel).FirstOrDefault();
+            }
+
+            return amountOfSDUs;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            if(value != null && parameter != null) {
+                string assetPath = ((string)parameter) == "LostLoot" ? DataPathTranslations.LLSDUAssetPath : DataPathTranslations.BankSDUAssetPath;
+
+                // I'm fairly certain this logic here isn't ACTUALLY needed but I'm adding it just for safety
+                var validSDUs = prf.ProfileSduLists.Where(x => x.SduDataPath == assetPath);
+                if (validSDUs.Any()) {
+                    // Set the value, bit wonky and costly because of LINQ; doesn't matter too much though
+                    prf.ProfileSduLists.FirstOrDefault(x => x.SduDataPath == assetPath).SduLevel = (int)value;
+                }
+                else {
+                    // Add the SDU to the list since it clearly wasn't there before.
+                    prf.ProfileSduLists.Add(new OakSDUSaveGameData() {
+                        SduDataPath = assetPath,
+                        SduLevel = (int)value
+                    });
+                }
+            }
+            return prf;
+        }
+    }
+
+    public class MultiElementObjectBinder : IMultiValueConverter {
+
+        public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
+            foreach(object obj in value) {
+                if (obj != null && obj != DependencyProperty.UnsetValue) {
+                    return obj;
+                }
+            }
+
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture) {
+            return null;
         }
     }
 

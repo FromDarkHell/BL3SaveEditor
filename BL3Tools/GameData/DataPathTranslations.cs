@@ -45,6 +45,35 @@ namespace BL3Tools.GameData {
             Console.WriteLine("Initialized CRC32 hashes of customization & currency data");
         }
 
+
+        #region Functions
+
+
+        #region Guardian Rank
+
+        public static string GetHumanRewardString(string assetPath) {
+            if (!GuardianRankRewards.ContainsKey(assetPath)) {
+                throw new Exception(string.Format("Guardian rank asset path undefined: {0}", assetPath));
+            }
+
+            return GuardianRankRewards[assetPath];
+        }
+
+        public static string GetRewardAssetPathString(string human) {
+            if (!GuardianRankRewards.ContainsValue(human)) {
+                throw new Exception(string.Format("Human formatted guardian-rank asset path undefined: {0}", human));
+            }
+            return GuardianRankRewards.FirstOrDefault(x => x.Value.Equals(human)).Key;
+        }
+
+        #endregion
+
+        #region Customizations
+
+        #endregion
+
+        #endregion
+
         #region Translation Dictionaries
 
         #region Fast Travels
