@@ -107,11 +107,6 @@
       <DependentUpon>DebugConsole.xaml</DependentUpon>
     </Compile>
     <Compile Include="Debug\RedirectWriter.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
     <Page Include="Debug\DebugConsole.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -168,23 +163,9 @@
     <Resource Include="Icons\fugue\folder-open-document.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\MinimapIcon_ChestDiamond.png" />
-    <Resource Include="Icons\MinimapIcon_ChestGolden.png" />
-    <Resource Include="Icons\MinimapIcon_ChestRed.png" />
-    <Resource Include="Icons\MinimapIcon_Mayhem.png" />
-    <Resource Include="Icons\MinimapIcon_MissionAvailable.png" />
-    <Resource Include="Icons\MinimapIcon_MissionComplete.png" />
-    <Resource Include="Icons\MinimapIcon_PlayerStorageBank.png" />
-    <Resource Include="Icons\MinimapIcon_Waypoint.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Icons\game\promptIconDiamondKey.png" />
     <Resource Include="Icons\game\promptIconEridium.png" />
     <Resource Include="Icons\game\promptIconGoldenKey.png" />
-    <Resource Include="Icons\game\skill.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Icons\game\inventory.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\fugue\wrench-screwdriver.png" />
@@ -194,6 +175,43 @@
       <Project>{eefeab45-b558-4d33-9c74-d68660e26921}</Project>
       <Name>BL3Tools</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_Pinging_Loot.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_MiniBoss.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_GalaxyMap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_QuickChange.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\BITMAP_ICO_Expansion_4k.png" />
+    <Resource Include="Icons\game\ECHOComm_IE.png" />
+    <Resource Include="Icons\game\MinimapIcon_LostFoundFull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MissionIcon_TurnIn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_Respawn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\AllModIcons_I2C.png" />
+    <Resource Include="Icons\game\AllModIcons_I2E.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\AllModIcons_I30.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\AllModIcons_I10.png" />
+    <Resource Include="Icons\game\AllModIcons_I12.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\game\MinimapIcon_SDUVendor.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

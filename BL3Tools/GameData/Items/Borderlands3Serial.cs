@@ -56,23 +56,81 @@ namespace BL3Tools.GameData.Items {
         public List<int> UnkData1 { get; set; }
         public int AmountRerolled { get; set; }
 
+        public string EncryptSerial(uint seed = 0) {
+            byte[] data = EncryptSerialToBytes(seed);
+            return $"BL3({Convert.ToBase64String(data)})";
+        }
+
         /// <summary>
         /// Encodes a given serial item into the specified format
         /// </summary>
         /// <param name="seed">A seed for which to do the encryption; defaults to 0, be nice to each other instead (:</param>
         /// <returns>A BL3(...) encoded string of the <c>Borderlands3Serial</c></returns>
-        public string EncryptSerial(uint seed = 0) {
-            MemoryStream resultStream = new MemoryStream();
-            IOWrapper result = new IOWrapper(resultStream, Endian.Big, 0);
-            result.WriteByte(SerialVersion);
-            result.WriteUInt32(seed);
+        public byte[] EncryptSerialToBytes(uint seed = 0) {
+            byte[] header = Helpers.ConcatArrays(
+                new byte[] { SerialVersion },
+                Converters.UInt32ToBytes(seed, true)
+            );
 
-            IOWrapper bytesToEncrypt = new IOWrapper(new MemoryStream(), Endian.Big, 0);
-            byte[] encryptedData = bytesToEncrypt.ReadAll();
-            BogoEncrypt(seed, encryptedData, 0, 0);
-            result.Write(encryptedData);
+            BitWriter writer = new BitWriter();
+            writer.WriteInt32(128, 8);
+            writer.WriteInt32(SerialDatabaseVersion, 7);
 
-            return "";
+            writer.WriteInt32(InventorySerialDatabase.GetIndexByPart("InventoryBalanceData", Balance),
+                InventorySerialDatabase.GetBitsToEat("InventoryBalanceData", SerialDatabaseVersion));
+            writer.WriteInt32(InventorySerialDatabase.GetIndexByPart("InventoryData", InventoryData),
+                InventorySerialDatabase.GetBitsToEat("InventoryData", SerialDatabaseVersion));
+            writer.WriteInt32(InventorySerialDatabase.GetIndexByPart("ManufacturerData", Manufacturer),
+                InventorySerialDatabase.GetBitsToEat("ManufacturerData", SerialDatabaseVersion));
+            writer.WriteInt32(Level, 7);
+
+            writer.WriteInt32(Parts.Count, 6);
+            int PartBits = InventorySerialDatabase.GetBitsToEat(InventoryKey, SerialDatabaseVersion);
+            foreach (string Part in Parts) {
+                int index = InventorySerialDatabase.GetIndexByPart(InventoryKey, Part);
+                if (index == -1) throw new BL3Tools.BL3Exceptions.SerialParseException();
+
+                writer.WriteInt32(index, PartBits);
+            }
+
+
+            writer.WriteInt32(GenericParts.Count, 4);
+            int GenericBits = InventorySerialDatabase.GetBitsToEat("InventoryGenericPartData", SerialDatabaseVersion);
+            foreach (string Generic in GenericParts) {
+                int index = InventorySerialDatabase.GetIndexByPart("InventoryGenericPartData", Generic);
+                if (index == -1) throw new BL3Tools.BL3Exceptions.SerialParseException();
+
+                writer.WriteInt32(index, GenericBits);
+            }
+
+            writer.WriteInt32(UnkData1.Count, 8);
+            foreach (int val in UnkData1) writer.WriteInt32(val, 8);
+
+            // This writes out the number of customization data; It's forced to be zero for now (:
+            writer.WriteInt32(0, 4);
+
+            // For consideration is just removing this check here for code compatability.
+            if (SerialVersion >= 4) writer.WriteInt32(AmountRerolled, 8);
+
+            byte[] buffer = writer.GetBuffer();
+
+            // Calculate
+            byte[] checksumBuffer = Helpers.ConcatArrays(header, new byte[] { 0xFF, 0xFF }, buffer);
+            var CRC = new IOTools.Algorithms.CRC32();
+            CRC.Compute(checksumBuffer);
+            var hash = CRC.GetHashUInt32;
+            var computedChecksum = (ushort)(((hash) >> 16) ^ ((hash & 0xFFFF) >> 0));
+
+            // Slap the checksum onto the start of the buffer data for encryption.
+            buffer = Helpers.ConcatArrays(Converters.UInt16ToBytes(computedChecksum, true), buffer);
+
+            // Encrypt the data
+            BogoEncrypt(seed, buffer, 0, buffer.Length);
+            
+            // Slap the serial version & seed onto the start
+            buffer = Helpers.ConcatArrays(header, buffer);
+
+            return buffer;
         }
 
         /// <summary>
@@ -174,7 +232,7 @@ namespace BL3Tools.GameData.Items {
                 int additionalCount = reader.ReadInt32(8);
                 additionalData = new List<int>();
                 for (int i = 0; i < additionalCount; i++) 
-                    additionalData.Append(reader.ReadInt32(8));
+                    additionalData.Add(reader.ReadInt32(8));
 
                 // The ""customization"" parts should be fully zero.
                 if(reader.ReadInt32(4) != 0)
@@ -223,7 +281,6 @@ namespace BL3Tools.GameData.Items {
 
             return parts;
         }
-
         private static string EatBitsForCategory(BitReader reader, string category, int version) {
             int numBitsToEat = InventorySerialDatabase.GetBitsToEat(category, version);
             int partIndex = reader.ReadInt32(numBitsToEat);

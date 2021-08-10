@@ -9,6 +9,7 @@ using BL3Tools.GameData;
 using OakSave;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
+using BL3Tools.GameData.Items;
 
 namespace BL3SaveEditor.Helpers {
 
@@ -416,6 +417,24 @@ namespace BL3SaveEditor.Helpers {
         public BoolStringPair(bool var, string val) {
             booleanVar = var;
             Value = val;
+        }
+    }
+
+    public class StringSerialPair {
+        public string Val1 { get; set; } = "";
+        public Borderlands3Serial Val2 { get; set; } = null;
+
+        public StringSerialPair(string val1, Borderlands3Serial val2) {
+            Val1 = val1;
+            Val2 = val2;
+        }
+
+        public override string ToString() {
+            return Val2.UserFriendlyName;
+        }
+
+        public static implicit operator Borderlands3Serial(StringSerialPair x) {
+            return x.Val2;
         }
     }
 

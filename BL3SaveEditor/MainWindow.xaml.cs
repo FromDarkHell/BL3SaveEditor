@@ -9,6 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Collections.Generic;
 using BL3SaveEditor.Helpers;
+using System.Collections.ObjectModel;
+using BL3Tools.GameData.Items;
 
 namespace BL3SaveEditor {
     /// <summary>
@@ -23,21 +25,21 @@ namespace BL3SaveEditor {
         public bool bSaveLoaded { get; set; } = false;
         public bool showDebugMaps { get; set; } = false;
 
-        public CollectionView ValidPlayerClasses { 
+        public ListCollectionView ValidPlayerClasses { 
             get {
-                return new CollectionView(BL3Save.ValidClasses.Keys);
+                return new ListCollectionView(BL3Save.ValidClasses.Keys.ToList());
             }
         }
-        public CollectionView ValidPlayerHeads {
+        public ListCollectionView ValidPlayerHeads {
             get {
                 // Hasn't loaded a save yet
-                if (saveGame == null) return new CollectionView(new List<string>() { "" });
+                if (saveGame == null) return new ListCollectionView(new List<string>() { "" });
                 
                 string characterClassPath = saveGame.Character.PlayerClassData.PlayerClassPath;
                 var kvp = BL3Save.ValidClasses.Where(x => x.Value.PlayerClassPath == characterClassPath);
                 
                 // Unknown character?
-                if(!kvp.Any()) return new CollectionView(new List<string>() { "" });
+                if(!kvp.Any()) return new ListCollectionView(new List<string>() { "" });
                 string characterName = kvp.First().Key;
 
                 var headAssetPaths = DataPathTranslations.HeadNamesDictionary[characterName];
@@ -47,19 +49,19 @@ namespace BL3SaveEditor {
                     headNames.Add(headName);
                 }
 
-                return new CollectionView(headNames);
+                return new ListCollectionView(headNames);
             }
         }
-        public CollectionView ValidPlayerSkins {
+        public ListCollectionView ValidPlayerSkins {
             get {
                 // Hasn't loaded a save yet
-                if (saveGame == null) return new CollectionView(new List<string>() { "" });
+                if (saveGame == null) return new ListCollectionView(new List<string>() { "" });
 
                 string characterClassPath = saveGame.Character.PlayerClassData.PlayerClassPath;
                 var kvp = BL3Save.ValidClasses.Where(x => x.Value.PlayerClassPath == characterClassPath);
 
                 // Unknown character?
-                if (!kvp.Any()) return new CollectionView(new List<string>() { "" });
+                if (!kvp.Any()) return new ListCollectionView(new List<string>() { "" });
                 string characterName = kvp.First().Key;
 
                 var skinAssetPaths = DataPathTranslations.SkinNamesDictionary[characterName];
@@ -69,9 +71,54 @@ namespace BL3SaveEditor {
                     skinNames.Add(headName);
                 }
 
-                return new CollectionView(skinNames);
+                return new ListCollectionView(skinNames);
             }
         }
+
+        public ListCollectionView SlotItems {
+            get {
+                // Hasn't loaded a save/profile yet
+                if (saveGame == null && profile == null) return null;
+                ObservableCollection<StringSerialPair> px = new ObservableCollection<StringSerialPair>();
+                List<int> usedIndexes = new List<int>();
+                List<Borderlands3Serial> itemsToSearch = null;
+
+                if (saveGame != null) {
+                    var equippedItems = saveGame.Character.EquippedInventoryLists;
+                    foreach (var item in equippedItems) {
+                        if (!item.Enabled || item.InventoryListIndex < 0 || item.InventoryListIndex > saveGame.InventoryItems.Count - 1) continue;
+                        usedIndexes.Add(item.InventoryListIndex);
+                        px.Add(new StringSerialPair("Equipped", saveGame.InventoryItems[item.InventoryListIndex]));
+                    }
+                    itemsToSearch = saveGame.InventoryItems;
+                }
+                else {
+                    itemsToSearch = profile.BankItems;
+                }
+
+                for (int i = 0; i < itemsToSearch.Count; i++) {
+                    // Ignore already used (equipped) indexes
+                    if (usedIndexes.Contains(i)) continue;
+                    var serial = itemsToSearch[i];
+
+                    // Split the items out into groups, assume weapons because they're the most numerous and different
+                    string itemType = "Weapon";
+                    if (serial.InventoryKey.Contains("_ClassMod")) itemType = "Class Mods";
+                    else if (serial.InventoryKey.Contains("_Artifact")) itemType = "Artifacts";
+                    else if (serial.InventoryKey.Contains("_Shield")) itemType = "Shields";
+
+                    px.Add(new StringSerialPair(itemType, serial));
+                }
+
+                ListCollectionView vx = new ListCollectionView(px);
+                // Group them by the "type"
+                vx.GroupDescriptions.Add(new PropertyGroupDescription("Val1"));
+                return vx;
+            }
+        }
+
+        public Borderlands3Serial SelectedSerial { get; set; }
+
         public int MaximumBankSDUs { get { return SDU.MaximumBankSDUs;  } }
         public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot;  } }
         #endregion
@@ -106,8 +153,8 @@ namespace BL3SaveEditor {
 
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count-1;
 
-            var x = BL3Tools.GameData.Items.Borderlands3Serial.DecryptSerial("BL3(AwAAAACxlIC1y1QBE0QesjkdMfnY444QAAAAAACADAg=)");
-            Console.WriteLine("Test...");
+            var test = Borderlands3Serial.DecryptSerial("BL3(AwAAAAD7u4A86PMBE4wakIcjwVhsgKJLUOHyoFJxhxAAAAAAAGCMAQ==)");
+            var bar = test.EncryptSerial();
         }
 
         #region Toolbar Interaction
@@ -140,13 +187,14 @@ namespace BL3SaveEditor {
             }
 
             ((TabItem)FindName("RawTabItem")).IsEnabled = true;
+            ((TabItem)FindName("InventoryTabItem")).IsEnabled = true;
+
             ((Button)FindName("SaveSaveBtn")).IsEnabled = true;
             ((Button)FindName("SaveAsSaveBtn")).IsEnabled = true;
 
             // Refresh the bindings on the GUI
             DataContext = null;
             DataContext = this;
-
         }
 
         private void SaveSaveBtn_Click(object sender, RoutedEventArgs e) {
@@ -217,12 +265,13 @@ namespace BL3SaveEditor {
         }
         #endregion
 
-        #region General
+        #region Interactions
         private void RandomizeGUIDBtn_Click(object sender, RoutedEventArgs e) {
             Guid newGUID = Guid.NewGuid();
             GUIDTextBox.Text = newGUID.ToString().Replace("-","").ToUpper();
         }
 
+        #region Fast Travel
         private void DbgMapBox_StateChange(object sender, RoutedEventArgs e) {
             VisitedTeleportersGrpBox.DataContext = null;
             VisitedTeleportersGrpBox.DataContext = this;
@@ -277,7 +326,30 @@ namespace BL3SaveEditor {
             }
         }
 
+        #endregion
 
+        #region Backpack / Bank
+
+        private void BackpackListView_Selected(object sender, RoutedEventArgs e) {
+            if (BackpackListView.Items.Count <= 1 || BackpackListView.SelectedValue == null) return;
+            StringSerialPair svp = (StringSerialPair)(((ListView)sender).SelectedValue);
+            SelectedSerial = svp.Val2;
+
+            (sender as ListView).ScrollIntoView(svp);
+        }
+
+        private void CopyItem_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e) {
+            StringSerialPair svp = (StringSerialPair)BackpackListView.SelectedValue;
+            SelectedSerial = svp.Val2;
+            // Be nice and copy the code with a 0 seed (:
+            string serialString = SelectedSerial.EncryptSerial(0);
+            Console.WriteLine("Copying selected item code: {0}", serialString);
+            
+            // Copy it to the clipboard
+            Clipboard.SetText(serialString);
+        }
+
+        #endregion
 
         #endregion
 

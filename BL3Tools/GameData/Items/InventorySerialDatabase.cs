@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -65,6 +66,22 @@ namespace BL3Tools.GameData.Items {
             JArray assets = ((JArray)InventoryDatabase[category]["assets"]);
 
             return assets[index - 1].Value<string>();
+        }
+
+        /// <summary>
+        /// Given <paramref name="part"/>, return the index for the part in the <paramref name="category"/>
+        /// </summary>
+        /// <param name="category">A category specified in the InventorySerialDatabase for which to get the index of</param>
+        /// <param name="part">A SerialDB based part-name</param>
+        /// <returns>The index of the given part in the category</returns>
+        public static int GetIndexByPart(string category, string part) {
+            // This logic here is a little bit janky, allows us to actually do an index of call without casting to a JToken
+            // It basically just gets every item of the category as a string.
+            var assets = ((JArray)InventoryDatabase[category]["assets"]).Children().Select(x => x.Value<string>()).ToList();
+            int index = assets.IndexOf(part);
+            if (index == -1) index = assets.IndexOf(part.ToLowerInvariant());
+            
+            return index == -1 ? -1 : index + 1;
         }
 
         /// <summary>
