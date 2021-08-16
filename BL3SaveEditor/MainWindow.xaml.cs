@@ -11,19 +11,24 @@ using System.Collections.Generic;
 using BL3SaveEditor.Helpers;
 using System.Collections.ObjectModel;
 using BL3Tools.GameData.Items;
+using MessageBox = AdonisUI.Controls.MessageBox;
+using System.Windows.Input;
 
 namespace BL3SaveEditor {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow {
-        
+
         #region Databinding Data
+        public static RoutedCommand DuplicateCommand { get; } = new RoutedCommand();
+
         public int maximumXP { get; } = PlayerXP._XPMaximumLevel;
         public int minimumXP { get; } = PlayerXP._XPMinimumLevel;
         public int maximumMayhemLevel { get; } = MayhemLevel.MaximumLevel;
         public bool bSaveLoaded { get; set; } = false;
         public bool showDebugMaps { get; set; } = false;
+        public bool ForceLegitParts { get; set; } = true;
 
         public ListCollectionView ValidPlayerClasses { 
             get {
@@ -74,7 +79,6 @@ namespace BL3SaveEditor {
                 return new ListCollectionView(skinNames);
             }
         }
-
         public ListCollectionView SlotItems {
             get {
                 // Hasn't loaded a save/profile yet
@@ -103,9 +107,13 @@ namespace BL3SaveEditor {
 
                     // Split the items out into groups, assume weapons because they're the most numerous and different
                     string itemType = "Weapon";
-                    if (serial.InventoryKey.Contains("_ClassMod")) itemType = "Class Mods";
+
+                    if (serial.InventoryKey == null) continue;
+                    else if (serial.InventoryKey.Contains("_ClassMod")) itemType = "Class Mods";
                     else if (serial.InventoryKey.Contains("_Artifact")) itemType = "Artifacts";
                     else if (serial.InventoryKey.Contains("_Shield")) itemType = "Shields";
+                    else if (serial.InventoryKey.Contains("_Customization")) itemType = "Customizations";
+                    else if (serial.InventoryKey.Contains("_GrenadeMod_")) itemType = "Grenades";
 
                     px.Add(new StringSerialPair(itemType, serial));
                 }
@@ -116,8 +124,97 @@ namespace BL3SaveEditor {
                 return vx;
             }
         }
+        public ListCollectionView ValidBalances {
+            get {
+                if (SelectedSerial == null) return null;
 
+                string inventoryKey = SelectedSerial.InventoryKey;
+                var balances = InventoryKeyDB.KeyDictionary.Where(x => x.Value.Equals(inventoryKey) && !x.Key.Contains("partset")).Select(x => InventorySerialDatabase.GetShortNameFromBalance(x.Key)).Where(x => !string.IsNullOrEmpty(x)).ToList();
+
+                return new ListCollectionView(balances);
+            }
+        }
+        public string SelectedBalance {
+            get {
+                if (SelectedSerial == null) return null;                
+                return InventorySerialDatabase.GetShortNameFromBalance(SelectedSerial.Balance);
+            }
+            set {
+                if (SelectedSerial == null) return;
+                SelectedSerial.Balance = InventorySerialDatabase.GetBalanceFromShortName(value);
+            }
+        }
+        public ListCollectionView ValidManufacturers {
+            get {
+                return new ListCollectionView(InventorySerialDatabase.GetManufacturers());
+            }
+        }
+        public string SelectedManufacturer {
+            get {
+                if (SelectedSerial == null) return null;
+                string Manufacturer = SelectedSerial.Manufacturer;
+                
+                List<string> shortNames = InventorySerialDatabase.GetManufacturers();
+                List<string> longNames = InventorySerialDatabase.GetManufacturers(false);
+
+                return shortNames[longNames.IndexOf(Manufacturer)];
+            }
+            set {
+                if (SelectedSerial == null) return;
+                
+                List<string> shortNames = InventorySerialDatabase.GetManufacturers();
+                List<string> longNames = InventorySerialDatabase.GetManufacturers(false);
+
+                SelectedSerial.Manufacturer = longNames[shortNames.IndexOf(value)];
+            }
+        }
+        public ListCollectionView InventoryDatas {
+            get {
+                return new ListCollectionView(InventorySerialDatabase.GetInventoryDatas());
+            }
+        }
+        public string SelectedInventoryData {
+            get {
+                return SelectedSerial?.InventoryData.Split('.').LastOrDefault();
+            }
+            set {
+                if (SelectedSerial == null) return;
+
+                List<string> shortNames = InventorySerialDatabase.GetInventoryDatas();
+                List<string> longNames = InventorySerialDatabase.GetInventoryDatas(false);
+                SelectedSerial.InventoryData = longNames[shortNames.IndexOf(value)];
+            }
+        }
         public Borderlands3Serial SelectedSerial { get; set; }
+
+        public ListCollectionView MainParts { 
+            get {
+                if (SelectedSerial == null) return null;
+                return new ListCollectionView(SelectedSerial.Parts.Select(x => x.Split('.').Last()).ToList());
+            }
+            set {
+                if (SelectedSerial == null) return;
+
+                int p = -1;
+            }
+        }
+
+        public ListCollectionView ValidParts {
+            get {
+                if (SelectedSerial == null) return null;
+
+                List<string> validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
+                return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
+            }
+        }
+
+        public ListCollectionView ValidGenerics {
+            get {
+                if (SelectedSerial == null) return null;
+                List<string> validParts = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
+                return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
+            }
+        }
 
         public int MaximumBankSDUs { get { return SDU.MaximumBankSDUs;  } }
         public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot;  } }
@@ -152,9 +249,6 @@ namespace BL3SaveEditor {
             dbgConsole = new Debug.DebugConsole();
 
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count-1;
-
-            var test = Borderlands3Serial.DecryptSerial("BL3(AwAAAAD7u4A86PMBE4wakIcjwVhsgKJLUOHyoFJxhxAAAAAAAGCMAQ==)");
-            var bar = test.EncryptSerial();
         }
 
         #region Toolbar Interaction
@@ -329,24 +423,155 @@ namespace BL3SaveEditor {
         #endregion
 
         #region Backpack / Bank
-
-        private void BackpackListView_Selected(object sender, RoutedEventArgs e) {
-            if (BackpackListView.Items.Count <= 1 || BackpackListView.SelectedValue == null) return;
-            StringSerialPair svp = (StringSerialPair)(((ListView)sender).SelectedValue);
-            SelectedSerial = svp.Val2;
-
-            (sender as ListView).ScrollIntoView(svp);
+        private void RefreshBackpackView() {
+            // Need to change the data context real quick to make the GUI update
+            var grid = ((Grid)FindName("SerialContentsGrid"));
+            grid.DataContext = null;
+            grid.DataContext = this;
         }
 
-        private void CopyItem_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e) {
+        private void BackpackListView_Selected(object sender, EventArgs e) {
+            if (BackpackListView.Items.Count <= 1 || BackpackListView.SelectedValue == null) return;
+            ListView listView = (sender as ListView);
+            StringSerialPair svp = (StringSerialPair)listView.SelectedValue;
+            SelectedSerial = svp.Val2;
+            
+            // Scroll to the selected item (in case of duplication / etc)
+            listView.ScrollIntoView(listView.SelectedItem);
+
+            RefreshBackpackView();
+
+        }
+        private void BackpackListView_MouseWheel(object sender, MouseWheelEventArgs e) {
+            if (e.Handled) return;
+
+            // This janky bit of logic allows us to scroll on hover over the items of the ListView as well :/
+            var listview = (sender as ListView);
+            var scrollViewer = listview.FindVisualChildren<ScrollViewer>().First();
+            // Multiply the value by 0.7 because just the delta value can be a bit much tbh
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta * 0.7) );
+
+            // Make sure no other elements can handle the events
+            e.Handled = true;
+        }
+
+        private void NewItemBtn_Click(object sender, RoutedEventArgs e) {
+            Controls.ItemBalanceChanger changer = new Controls.ItemBalanceChanger() { Owner = this };
+            changer.ShowDialog();
+
+            // The user actually hit the save button and we have data about the item
+            if (changer.SelectedInventoryData != null) {
+                var serial = Borderlands3Serial.CreateSerialFromBalanceData(changer.SelectedBalance);
+                if (serial == null) return;
+
+                serial.InventoryData = changer.SelectedInventoryData;
+                // Set a manufacturer so that way the bindings don't lose their mind
+                serial.Manufacturer = InventorySerialDatabase.GetManufacturers().FirstOrDefault();
+
+                if (profile == null) saveGame.InventoryItems.Add(serial);
+                else profile.BankItems.Add(serial);
+
+                BackpackListView.ItemsSource = null;
+                BackpackListView.ItemsSource = SlotItems;
+                RefreshBackpackView();
+            }
+
+
+        }
+        private void PasteCodeBtn_Click(object sender, RoutedEventArgs e) {
+            string serialCode = Clipboard.GetText();
+
+            try {
+                Borderlands3Serial item = Borderlands3Serial.DecryptSerial(serialCode);
+
+                if (profile == null) saveGame.InventoryItems.Add(item);
+                else profile.BankItems.Add(item);
+
+                BackpackListView.Items.Refresh();
+
+                var selectedValue = BackpackListView.Items.Cast<StringSerialPair>().Where(x => ReferenceEquals(x.Val2, item)).LastOrDefault();
+                BackpackListView.SelectedValue = selectedValue;
+            }
+            catch(BL3Tools.BL3Tools.BL3Exceptions.SerialParseException ex) {
+                string message = ex.Message;
+                Console.WriteLine($"Exception ({message}) parsing serial: {ex.ToString()}");
+                if (ex.knowCause)
+                    MessageBox.Show($"Error parsing serial: {ex.Message}", "Serial Parse Exception", AdonisUI.Controls.MessageBoxButton.OK, AdonisUI.Controls.MessageBoxImage.Error);
+            }
+        }
+        private void SyncEquippedBtn_Click(object sender, RoutedEventArgs e) {
+            if (saveGame == null) return;
+            int levelToSync = PlayerXP.GetLevelForPoints(saveGame.Character.ExperiencePoints);
+            foreach(var equipData in saveGame.Character.EquippedInventoryLists) {
+                if (!equipData.Enabled || equipData.InventoryListIndex < 0 || equipData.InventoryListIndex > saveGame.InventoryItems.Count - 1) continue;
+                
+                // Sync the level onto the item
+                saveGame.InventoryItems[equipData.InventoryListIndex].Level = levelToSync;
+            }
+            RefreshBackpackView();
+        }
+        private void SyncAllBtn_Click(object sender, RoutedEventArgs e) {
+            int levelToSync = -1;
+            if (profile != null) {
+                var msgBox = new Controls.IntegerMessageBox("Please enter a level to sync your items for syncing", "Level: ", 0, maximumXP, maximumXP);
+                msgBox.Owner = this;
+                msgBox.ShowDialog();
+                if (!msgBox.Succeeded) return;
+
+                levelToSync = msgBox.Result;
+            }
+            else 
+                levelToSync = PlayerXP.GetLevelForPoints(saveGame.Character.ExperiencePoints);
+            
+            foreach (Borderlands3Serial item in (profile == null ? saveGame.InventoryItems : profile.BankItems)) {
+                Console.WriteLine($"Syncing level for item ({item.UserFriendlyName}) from {item.Level} to {levelToSync}");
+                item.Level = levelToSync;
+            }
+            RefreshBackpackView();
+        }
+        private void CopyItem_Executed(object sender, ExecutedRoutedEventArgs e) {
             StringSerialPair svp = (StringSerialPair)BackpackListView.SelectedValue;
             SelectedSerial = svp.Val2;
+
             // Be nice and copy the code with a 0 seed (:
             string serialString = SelectedSerial.EncryptSerial(0);
             Console.WriteLine("Copying selected item code: {0}", serialString);
-            
+
             // Copy it to the clipboard
-            Clipboard.SetText(serialString);
+            Clipboard.SetDataObject(serialString);
+        }
+        private void PasteItem_Executed(object sender, ExecutedRoutedEventArgs e) {
+            PasteCodeBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+        private void DuplicateItem_Executed(object sender, ExecutedRoutedEventArgs e) {
+            // This basically just clicks both the copy and paste button
+            CopyItem_Executed(null, e);
+            PasteCodeBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+        private void ChangeTypeBtn_Click(object sender, RoutedEventArgs e) {
+            var itemKey = InventoryKeyDB.GetKeyForBalance(InventorySerialDatabase.GetBalanceFromShortName(SelectedBalance));
+            var itemType = InventoryKeyDB.ItemTypeToKey.Where(x => x.Value.Contains(itemKey)).Select(x => x.Key).FirstOrDefault();
+
+            Controls.ItemBalanceChanger changer = new Controls.ItemBalanceChanger(itemType, SelectedBalance) { Owner = this };
+
+            changer.ShowDialog();
+
+            // The user actually hit the save button and we have data about the item
+            if (changer.SelectedInventoryData != null) {
+                SelectedInventoryData = changer.SelectedInventoryData;
+                SelectedBalance = changer.SelectedBalance;
+
+                RefreshBackpackView();
+            }
+        }
+        private void ItemPart_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (e.Handled || e.RemovedItems.Count < 1) return;
+
+            var newPart = e.AddedItems.Cast<string>().FirstOrDefault();
+            var oldPart = e.RemovedItems.Cast<string>().FirstOrDefault();
+            if (newPart == default || oldPart == default) return;
+
+            int p = -1;
         }
 
         #endregion

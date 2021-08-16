@@ -1,0 +1,31 @@
+﻿<adonisControls:AdonisWindow x:Class="BL3SaveEditor.Controls.IntegerMessageBox "
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BL3SaveEditor.Controls" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+        xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" mc:Ignorable="d" Title=""
+        Height="129" Width="370"
+        Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True"
+        WindowStartupLocation="CenterOwner" DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        WindowStyle="None">
+    <Window.Style>
+        <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}" />
+    </Window.Style>
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,2">
+        <Button Content="Ok" Name="OkBtn" Click="OkBtn_Click" HorizontalAlignment="Right" Margin="0,0,90,10"
+                VerticalAlignment="Bottom" Width="89" />
+        <Button Content="Exit" Name="ExitBtn" Click="ExitBtn_Click" HorizontalAlignment="Right" Margin="0,0,10,10"
+                VerticalAlignment="Bottom" Width="75" />
+        <TextBlock HorizontalAlignment="Left" TextAlignment="Center" Foreground="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}"
+                Margin="10,10,0,0" TextWrapping="Wrap" Text="{Binding Path=Message}" VerticalAlignment="Top" Height="25" Width="342" Padding="0 5 5 5" />
+        <xctk:IntegerUpDown Value="{Binding Path=Result, Mode=TwoWay}" Maximum="{Binding Path=Maximum, Mode=OneTime}"
+                Minimum="{Binding Path=Minimum, Mode=OneTime}" HorizontalAlignment="Stretch" Margin="115,45,10,0"
+                VerticalAlignment="Top" />
+        <Label Content="{Binding Path=Label}" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top"
+                Height="20" Width="100" />
+    </Grid>
+</adonisControls:AdonisWindow>

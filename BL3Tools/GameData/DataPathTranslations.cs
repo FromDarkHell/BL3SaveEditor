@@ -2,6 +2,10 @@
 using System.Linq;
 using System.Collections.Generic;
 using BL3Tools.Decryption;
+using System.Reflection;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using BL3Tools.GameData.Items;
 
 namespace BL3Tools.GameData {
     public static class DataPathTranslations {
@@ -24,12 +28,14 @@ namespace BL3Tools.GameData {
         public static readonly string MoneyCurrencyPath = "/Game/Gear/_Shared/_Design/InventoryCategories/InventoryCategory_Money.InventoryCategory_Money";
         public static readonly string EridiumCurrencyPath = "/Game/Gear/_Shared/_Design/InventoryCategories/InventoryCategory_Eridium.InventoryCategory_Eridium";
 
-
-
         public static readonly uint GoldenKeyHash;
         public static readonly uint DiamondKeyHash;
         public static readonly uint MoneyHash;
         public static readonly uint EridiumHash;
+
+        private static readonly string embeddedFastTravelDatabasePath = "BL3Tools.GameData.Mappings.fast_travel_to_name.json";
+
+
 
         static DataPathTranslations() {
             foreach (string assetPath in weaponAssetPaths.Keys)
@@ -43,11 +49,18 @@ namespace BL3Tools.GameData {
             EridiumHash = CRC32.Get(EridiumCurrencyPath);
 
             Console.WriteLine("Initialized CRC32 hashes of customization & currency data");
+
+            Assembly me = typeof(BL3Tools).Assembly;
+            using (Stream stream = me.GetManifestResourceStream(embeddedFastTravelDatabasePath))
+            using (StreamReader reader = new StreamReader(stream)) {
+                string result = reader.ReadToEnd();
+                JObject db = JObject.FromObject(Newtonsoft.Json.JsonConvert.DeserializeObject(result));
+                FastTravelTranslations = db.ToObject<Dictionary<string, string>>();
+            }
         }
 
 
         #region Functions
-
 
         #region Guardian Rank
 
@@ -65,10 +78,6 @@ namespace BL3Tools.GameData {
             }
             return GuardianRankRewards.FirstOrDefault(x => x.Value.Equals(human)).Key;
         }
-
-        #endregion
-
-        #region Customizations
 
         #endregion
 
@@ -120,186 +129,7 @@ namespace BL3Tools.GameData {
             "/Game/GameData/FastTravel/FTS_CityBoss_SendOnly.FTS_CityBoss_SendOnly"
         };
 
-        /*  The following code was generated using a PythonSDK script (and then hand modified a bit):
-         *  ```
-            import os
-            from unrealsdk import *
-
-            fastTravelStations = UObject.FindAll("Class /Script/GbxTravelStation.FastTravelStationData")[1:]
-            with open("./fast_travels.txt", "w") as outFile:
-	            text = "public static readonly Dictionary<string, string> FastTravelTranslations = new Dictionary<string, string>() {\n"
-	            for station in fastTravelStations:
-		            text += f'\t{{"{str(station).split(" ")[1]}", "{station.DisplayName}"}},\n'
-	            text = text[:-2] + "\n"
-	            text += "};\n"
-	            outFile.write(text)
-        *   ```
-        */
-        public static readonly Dictionary<string, string> FastTravelTranslations = new Dictionary<string, string>() {
-            {"/Game/PatchDLC/Takedown2/GameData/LevelTravel/FTS_TD2DropPod1.FTS_TD2DropPod1", "The Shattered Tribunal - Drop Pod"},
-            {"/Game/PatchDLC/Takedown2/GameData/LevelTravel/FTS_TD2.FTS_TD2", "Guardian Breach"},
-            {"/Game/PatchDLC/Takedown2/GameData/LevelTravel/FTS_GuardianTD_SendOnly.FTS_GuardianTD_SendOnly", "Guardian Breach"},
-            {"/Game/PatchDLC/Raid1/GameData/FastTravel/LevelTravelData/FTS_Raid1DropPod.FTS_Raid1DropPod", "Midnight's Cairn"},
-            {"/Game/PatchDLC/Raid1/GameData/FastTravel/LevelTravelData/FTS_Raid1.FTS_Raid1", "Midnight's Cairn"},
-            {"/Game/PatchDLC/Raid1/GameData/FastTravel/LevelTravelData/FTS_MaliwanTD_SendOnly.FTS_MaliwanTD_SendOnly", "Midnight's Cairn – The Godsgallows"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/LTS_Ixora2_Eden6_OneWay.LTS_Ixora2_Eden6_OneWay", "Enoch's Grove (One-Way)"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_SacrificeBoss_One.FTS_Ixora2_SacrificeBoss_One", "Darkthirst Dominion"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_SacrificeBoss.FTS_Ixora2_SacrificeBoss", "Darkthirst Dominion"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_Promethea_OneWay.FTS_Ixora2_Promethea_OneWay", "Eschaton Row (One-Way)"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_PrometheaMystery.FTS_Ixora2_PrometheaMystery", "Eschaton Row"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_Promethea.FTS_Ixora2_Promethea", "Eschaton Row"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_PandoraMystery.FTS_Ixora2_PandoraMystery", "Karass Canyon"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_NekroMystery_OneWay.FTS_Ixora2_NekroMystery_OneWay", "Scryer's Crypt"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_NekroMystery.FTS_Ixora2_NekroMystery", "Scryer's Crypt"},
-            {"/Game/PatchDLC/Ixora2/GameData/FastTravel/LevelTravel/FTS_Ixora2_Eden6Mystery.FTS_Ixora2_Eden6Mystery", "Enoch's Grove"},
-            {"/Game/PatchDLC/Ixora/GameData/FastTravel/LevelTravel/FTS_GearUpMap_SendOnly.FTS_GearUpMap_SendOnly", "Stormblind Complex"},
-            {"/Game/PatchDLC/Ixora/GameData/FastTravel/LevelTravel/FTS_GearUpMap.FTS_GearUpMap", "Stormblind Complex"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Woods.FTS_DLC2_Woods", "The Cankerwood"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Village_NearBar.FTS_DLC2_Village_NearBar", "Cursehaven – Olmstead Square"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Village_NearArchives.FTS_DLC2_Village_NearArchives", "Cursehaven – Withernot Cemetery"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_VillageGardens.FTS_DLC2_VillageGardens", "Cursehaven – Bleak Terrace"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_VillageDistrict.FTS_DLC2_VillageDistrict", "Cursehaven – Lantern's Hook"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Venue_OneWay.FTS_DLC2_Venue_OneWay", "Heart's Desire – Heart Chamber"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Venue_MapStart.FTS_DLC2_Venue_MapStart", "Heart's Desire – Entrance"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Venue.FTS_DLC2_Venue", "Heart's Desire – What Beats Beneath"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Lake_Gondola.FTS_DLC2_Lake_Gondola", "Skittermaw Basin – Cursehaven Gondola"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Lake_Excavation.FTS_DLC2_Lake_Excavation", "Skittermaw Basin – Nethes Mines"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Lake_DropPod.FTS_DLC2_Lake_DropPod", "Skittermaw Basin"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Lake_Amourette.FTS_DLC2_Lake_Amourette", "Skittermaw Basin – Clan Amourette"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Camp_OneWay.FTS_DLC2_Camp_OneWay", "Negul Neshai – Xenocardiac Containment"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Camp.FTS_DLC2_Camp", "Negul Neshai"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Bar.FTS_DLC2_Bar", "The Lodge"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Archives_OneWay.FTS_DLC2_Archives_OneWay", "Dustbound Archives – Founders' Office"},
-            {"/Game/PatchDLC/Hibiscus/GameData/FastTravel/FTS_DLC2_Archive.FTS_DLC2_Archive", "Dustbound Archives"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Town_DLC3_Pod.FTS_Town_DLC3_Pod", "Vestige – Drop Pod"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Town_DLC3.FTS_Town_DLC3", "Vestige"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Lodge_DLC3_Mid.FTS_Lodge_DLC3_Mid", "Ashfall Peaks – Caldera Stronghold"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Lodge_DLC3_Boss.FTS_Lodge_DLC3_Boss", "Ashfall Peaks – Rose's Private Alcove"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Lodge_DLC3.FTS_Lodge_DLC3", "Ashfall Peaks"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Frontier_DLC3_GasStation.FTS_Frontier_DLC3_GasStation", "The Blastplains – Pump & Charge"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Frontier_DLC3_Garage.FTS_Frontier_DLC3_Garage", "The Blastplains"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Frontier_DLC3_Fort.FTS_Frontier_DLC3_Fort", "The Blastplains – Fort Kickwater"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Forest_DLC3_Mid.FTS_Forest_DLC3_Mid", "Obsidian Forest – Crone's Contentment"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Forest_DLC3.FTS_Forest_DLC3", "Obsidian Forest"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Facility_DLC3_SendOnly.FTS_Facility_DLC3_SendOnly", "Bloodsun Canyon – Materials Transport"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Facility_DLC3_mid.FTS_Facility_DLC3_Mid", "Bloodsun Canyon – Presentation Room"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_Facility_DLC3.FTS_Facility_DLC3", "Bloodsun Canyon"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_CraterBoss_DLC3_Boss.FTS_CraterBoss_DLC3_Boss", "Crater's Edge – Birth of Ruin"},
-            {"/Game/PatchDLC/Geranium/GameData/FastTravel/FTS_CraterBoss_DLC3.FTS_CraterBoss_DLC3", "Crater's Edge"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Trashtown_DLC1_Town.FTS_Trashtown_DLC1_Town", "The Compactor – Trashlantis"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Trashtown_DLC1.FTS_Trashtown_DLC1", "The Compactor"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_TowerLair_DLC1_Scrooge.FTS_TowerLair_DLC1_Scrooge", "VIP Tower Stash"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_TowerLair_DLC1_Lobby.FTS_TowerLair_DLC1_Lobby", "VIP Tower Entrance"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Strip_DLC1_Vice.FTS_Strip_DLC1_Vice", "The Spendopticon – Vice District"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Strip_DLC1_TricksyNickArea.FTS_Strip_DLC1_TricksyNickArea", "The Spendopticon – Tricksy Nick's Hideout"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Strip_DLC1_Market.FTS_Strip_DLC1_Market", "The Spendopticon – Market District"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Strip_DLC1_Hideout.FTS_Strip_DLC1_Hideout", "The Spendopticon – Casa de Timothy"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Strip_DLC1_Entrance.FTS_Strip_DLC1_Entrance", "The Spendopticon"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Impound_DLC1_LowGrav.FTS_Impound_DLC1_LowGrav", "Impound Deluxe – Beggar's Berth"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Impound_DLC1_Exit.FTS_Impound_DLC1_Exit", "Impound Deluxe – La Femme Brûlée"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Impound_DLC1.FTS_Impound_DLC1", "Impound Deluxe"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Core_DLC1_Boss.FTS_Core_DLC1_Boss", "Jack's Secret – Prototype Testing Arena"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_Core_DLC1.FTS_Core_DLC1", "Jack's Secret"},
-            {"/Game/PatchDLC/Dandelion/GameData/FastTravel/FTS_CasinoIntro_DLC1_Pod.FTS_CasinoIntro_DLC1_Pod", "Grand Opening"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Sanctum_DropPod.FTS_ALI_Sanctum_DropPod", "The Psychoscape – The Screaming Meadow"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Sanctum.FTS_ALI_Sanctum", "The Psychoscape – Sanity's Sanctum"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Experiment_Boss.FTS_ALI_Experiment_Boss", "Benediction of Pain – The Clotted Stage"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Experiment.FTS_ALI_Experiment", "Benediction of Pain"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Eldorado_Boss.FTS_ALI_Eldorado_Boss", "Vaulthalla – Destroyer's Wake"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Eldorado.FTS_ALI_Eldorado", "Vaulthalla"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Chase_Boss.FTS_ALI_Chase_Boss", "Sapphire's Run – Coalheart Lair"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Chase.FTS_ALI_Chase", "Sapphire's Run"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Anger_Castle.FTS_ALI_Anger_Castle", "Castle Crimson – The Walls"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Anger_Boss.FTS_ALI_Anger_Boss", "Castle Crimson – Atop the Spire"},
-            {"/Game/PatchDLC/Alisma/GameData/FastTravel/FTS_ALI_Anger.FTS_ALI_Anger", "Castle Crimson"},
-            {"/Game/GameData/FastTravel/FTS_ZoneMapTest2.FTS_ZoneMapTest2", "Fast Travel Station B"},
-            {"/Game/GameData/FastTravel/FTS_ZoneMapTest.FTS_ZoneMapTest", "Fast Travel Station A"},
-            {"/Game/GameData/FastTravel/FTS_WetlandsVault.FTS_WetlandsVault", "Blackbarrel Cellars"},
-            {"/Game/GameData/FastTravel/FTS_WetlandsDropPod.FTS_WetlandsDropPod", "Floodmoor Basin – Drop Pod"},
-            {"/Game/GameData/FastTravel/FTS_WetlandsBoss_SendOnly.FTS_WetlandsBoss_SendOnly", "The Floating Tomb – Altar of the Guardians"},
-            {"/Game/GameData/FastTravel/FTS_WetlandsBoss.FTS_WetlandsBoss", "The Floating Tomb"},
-            {"/Game/GameData/FastTravel/FTS_Wetlands2.FTS_Wetlands2", "Floodmoor Basin – Reliance"},
-            {"/Game/GameData/FastTravel/FTS_Wetlands1.FTS_Wetlands1", "Floodmoor Basin – Knotty Peak"},
-            {"/Game/GameData/FastTravel/FTS_Watership_SendOnly.FTS_Watership_SendOnly", "Voracious Canopy – Bridge of the Jewel"},
-            {"/Game/GameData/FastTravel/FTS_Watership.FTS_Watership", "Voracious Canopy"},
-            {"/Game/GameData/FastTravel/FTS_Towers.FTS_Towers", "Lectra City"},
-            {"/Game/GameData/FastTravel/FTS_TechSlaughterDropPod.FTS_TechSlaughterDropPod", "Slaughterstar 3000 – Drop Pod"},
-            {"/Game/GameData/FastTravel/FTS_TechSlaughter.FTS_TechSlaughter", "Slaughterstar 3000"},
-            {"/Game/GameData/FastTravel/FTS_SanctuaryBridge.FTS_SanctuaryBridge", "Sanctuary – Bridge"},
-            {"/Game/GameData/FastTravel/FTS_Sanctuary.FTS_Sanctuary", "Sanctuary"},
-            {"/Game/GameData/FastTravel/FTS_Sacrifice.FTS_Sacrifice", "Ascension Bluff"},
-            {"/Game/GameData/FastTravel/FTS_Recruitment.FTS_Recruitment", "Covenant Pass"},
-            {"/Game/GameData/FastTravel/FTS_Raid.FTS_Raid", "Raid"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds08_OneWay.FTS_ProvingGrounds08_OneWay", "Proving Grounds – Instinct (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds08_Droppod.FTS_ProvingGrounds08_Droppod", "Proving Grounds – Instinct"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds08.FTS_ProvingGrounds08", "Proving Grounds – Instinct"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds07_OneWay.FTS_ProvingGrounds07_OneWay", "Proving Grounds – Discipline (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds07_Droppod.FTS_ProvingGrounds07_Droppod", "Proving Grounds – Discipline"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds07.FTS_ProvingGrounds07", "Proving Grounds – Discipline"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds06_OneWay.FTS_ProvingGrounds06_OneWay", "Proving Grounds – Supremacy (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds06_Droppod.FTS_ProvingGrounds06_Droppod", "Proving Grounds – Supremacy"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds06.FTS_ProvingGrounds06", "Proving Grounds – Supremacy"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds05_OneWay.FTS_ProvingGrounds05_OneWay", "Proving Grounds – Cunning (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds05_Droppod.FTS_ProvingGrounds05_Droppod", "Proving Grounds – Cunning"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds05.FTS_ProvingGrounds05", "Proving Grounds – Cunning"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds04_OneWay.FTS_ProvingGrounds04_OneWay", "Proving Grounds – Fervor (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds04_Droppod.FTS_ProvingGrounds04_Droppod", "Proving Grounds – Fervor"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds04.FTS_ProvingGrounds04", "Proving Grounds – Fervor"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds03.FTS_ProvingGrounds03", "Proving Grounds 03"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds02.FTS_ProvingGrounds02", "Proving Grounds 02"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds01_OneWay.FTS_ProvingGrounds01_OneWay", "Proving Grounds – Survival (End) (One-Way)"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds01_Droppod.FTS_ProvingGrounds01_Droppod", "Proving Grounds – Survival"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds01.FTS_ProvingGrounds01", "Proving Grounds – Survival"},
-            {"/Game/GameData/FastTravel/FTS_ProvingGrounds00.FTS_ProvingGrounds00", "Proving Grounds 00"},
-            {"/Game/GameData/FastTravel/FTS_Prologue2.FTS_Prologue2", "The Droughts – Highway"},
-            {"/Game/GameData/FastTravel/FTS_Prologue.FTS_Prologue", "The Droughts"},
-            {"/Game/GameData/FastTravel/FTS_Prison_SendOnly.FTS_Prison_SendOnly", "The Anvil – Ultramax Spire"},
-            {"/Game/GameData/FastTravel/FTS_Prison.FTS_Prison", "The Anvil"},
-            {"/Game/GameData/FastTravel/FTS_PlayableIntro_SendOnly.FTS_PlayableIntro_SendOnly", "Playable Intro SendOnly"},
-            {"/Game/GameData/FastTravel/FTS_OutskirtsDropPod.FTS_OutskirtsDropPod", "Meridian Outskirts – Drop Pod"},
-            {"/Game/GameData/FastTravel/FTS_Outskirts.FTS_Outskirts", "Meridian Outskirts"},
-            {"/Game/GameData/FastTravel/FTS_OrbitalShuttle.FTS_OrbitalShuttle", "Skywell-27 – Shuttle"},
-            {"/Game/GameData/FastTravel/FTS_OrbitalPlatform_SendOnly.FTS_OrbitalPlatform_SendOnly", "Skywell-27 – Laser Control Room"},
-            {"/Game/GameData/FastTravel/FTS_OrbitalPlatform.FTS_OrbitalPlatform", "Skywell-27"},
-            {"/Game/GameData/FastTravel/FTS_MotorcadeInterior_SendOnly.FTS_MotorcadeInterior_SendOnly", "Guts of Carnivora – Agonizer 9000"},
-            {"/Game/GameData/FastTravel/FTS_MotorcadeInterior.FTS_MotorcadeInterior", "Guts of Carnivora"},
-            {"/Game/GameData/FastTravel/FTS_MotorcadeFestival.FTS_MotorcadeFestival", "Carnivora"},
-            {"/Game/GameData/FastTravel/FTS_Motorcade2.FTS_Motorcade2", "The Splinterlands – Chop Shop"},
-            {"/Game/GameData/FastTravel/FTS_Motorcade.FTS_Motorcade", "The Splinterlands – Pitt's Stop"},
-            {"/Game/GameData/FastTravel/FTS_Monastery_SendOnly.FTS_Monastery_SendOnly", "Athenas – The Anchorhold"},
-            {"/Game/GameData/FastTravel/FTS_MonasteryDropPod.FTS_MonasteryDropPod", "Athenas – Drop Pod"},
-            {"/Game/GameData/FastTravel/FTS_Monastery.FTS_Monastery", "Athenas"},
-            {"/Game/GameData/FastTravel/FTS_Mine.FTS_Mine", "Konrad's Hold"},
-            {"/Game/GameData/FastTravel/FTS_Marshfields_SendOnly.FTS_Marshfields_SendOnly", "Marshfields SendOnly"},
-            {"/Game/GameData/FastTravel/FTS_MarshfieldsShip.FTS_MarshfieldsShip", "Ambermire – Rogue's Hollow"},
-            {"/Game/GameData/FastTravel/FTS_Marshfields.FTS_Marshfields", "Ambermire"},
-            {"/Game/GameData/FastTravel/FTS_Mansion.FTS_Mansion", "Jakobs Estate"},
-            {"/Game/GameData/FastTravel/FTS_Grotto.FTS_Grotto", "Grotto"},
-            {"/Game/GameData/FastTravel/FTS_FinalBoss_SendOnly.FTS_FinalBoss_SendOnly", "Destroyer's Rift – Crown of Tyrants"},
-            {"/Game/GameData/FastTravel/FTS_FinalBossPortal.FTS_FinalBossPortal", "FinalBoss Portal"},
-            {"/Game/GameData/FastTravel/FTS_FinalBoss.FTS_FinalBoss", "Destroyer's Rift"},
-            {"/Game/GameData/FastTravel/FTS_DesolateDropPod.FTS_DesolateDropPod", "Desolation's Edge – Drop Pod"},
-            {"/Game/GameData/FastTravel/FTS_Desolate2.FTS_Desolate2", "Desolation's Edge"},
-            {"/Game/GameData/FastTravel/FTS_DesertVault.FTS_DesertVault", "Cathedral of the Twin Gods"},
-            {"/Game/GameData/FastTravel/FTS_DesertBoss_SendOnly.FTS_DesertBoss_SendOnly", "The Great Vault – Dig Site"},
-            {"/Game/GameData/FastTravel/FTS_DesertBoss.FTS_DesertBoss", "The Great Vault"},
-            {"/Game/GameData/FastTravel/FTS_Desert2.FTS_Desert2", "Devil's Razor – Boomtown"},
-            {"/Game/GameData/FastTravel/FTS_Desert1.FTS_Desert1", "Devil's Razor – Roland's Rest"},
-            {"/Game/GameData/FastTravel/FTS_Crypt.FTS_Crypt", "The Pyre of Stars"},
-            {"/Game/GameData/FastTravel/FTS_CreatureSlaughter.FTS_CreatureSlaughter", "Cistern of Slaughter"},
-            {"/Game/GameData/FastTravel/FTS_COVSlaughter.FTS_COVSlaughter", "The Slaughter Shaft"},
-            {"/Game/GameData/FastTravel/FTS_Convoy.FTS_Convoy", "Sandblast Scar"},
-            {"/Game/GameData/FastTravel/FTS_CityVault.FTS_CityVault", "Neon Arterial"},
-            {"/Game/GameData/FastTravel/FTS_CityBoss_SendOnly.FTS_CityBoss_SendOnly", "The Forgotten Basilica"},
-            {"/Game/GameData/FastTravel/FTS_CityBoss.FTS_CityBoss", "The Forgotten Basilica"},
-            {"/Game/GameData/FastTravel/FTS_City.FTS_City", "Meridian Metroplex"},
-            {"/Game/GameData/FastTravel/FTS_Beach_SendOnly.FTS_Beach_SendOnly", "Tazendeer Ruins – An Eternal Silence"},
-            {"/Game/GameData/FastTravel/FTS_Beach.FTS_Beach", "Tazendeer Ruins"},
-            {"/Game/GameData/FastTravel/FTS_AtlasHQ_SendOnly.FTS_AtlasHQ_SendOnly", "Atlas HQ – Rooftop"},
-            {"/Game/GameData/FastTravel/FTS_AtlasHQ.FTS_AtlasHQ", "Atlas HQ"},
-            {"/Game/PatchDLC/Event2/GameData/FastTravel/LevelTravelData/FTS_CartelHideout.FTS_CartelHideout", "Cartel Hideout"},
-            {"/Game/PatchDLC/BloodyHarvest/GameData/FastTravel/LevelTravelData/FTS_BloodyHarvest.FTS_BloodyHarvest", "Bloody Harvest"}
-        };
+        public static readonly Dictionary<string, string> FastTravelTranslations = new Dictionary<string, string>();
 
         #endregion
 
@@ -326,7 +156,22 @@ namespace BL3Tools.GameData {
 };
         #endregion
 
+        #region Items etc
+        public static Dictionary<string, string> SlotToPathDictionary = new Dictionary<string, string>() {
+            {"GrenadeMod", "/Game/Gear/GrenadeMods/_Design/A_Data/BPInvSlot_GrenadeMod.BPInvSlot_GrenadeMod" },
+            {"Shield", "/Game/Gear/Shields/_Design/A_Data/BPInvSlot_Shield.BPInvSlot_Shield" },
+            {"Weapon1", "/Game/Gear/Weapons/_Shared/_Design/InventorySlots/BPInvSlot_Weapon1.BPInvSlot_Weapon1" },
+            {"Weapon2", "/Game/Gear/Weapons/_Shared/_Design/InventorySlots/BPInvSlot_Weapon2.BPInvSlot_Weapon2" },
+            {"Weapon3", "/Game/Gear/Weapons/_Shared/_Design/InventorySlots/BPInvSlot_Weapon3.BPInvSlot_Weapon3" },
+            {"Weapon4", "/Game/Gear/Weapons/_Shared/_Design/InventorySlots/BPInvSlot_Weapon4.BPInvSlot_Weapon4" },
+            {"Artifact", "/Game/Gear/Artifacts/_Design/_Data/BPInvSlot_Artifact.BPInvSlot_Artifact" },
+            {"ClassMod", "/Game/Gear/ClassMods/_Design/_Data/BPInvSlot_ClassMod.BPInvSlot_ClassMod" }
+        };
+        #endregion
+
         #region Customizations
+        // TODO: I'd love to basically remove this and get all of these pieces of data from the SerialDB, etc.
+
         public static readonly Dictionary<string, string> emotesAssetPaths = new Dictionary<string, string>(){
     {"/Game/PlayerCharacters/_Customizations/Beastmaster/Emotes/CustomEmote_Beastmaster_02_Cheer.CustomEmote_Beastmaster_02_Cheer", "Cheer"},
     {"/Game/PlayerCharacters/_Customizations/Beastmaster/Emotes/CustomEmote_Beastmaster_11_Chicken_Dance.CustomEmote_Beastmaster_11_Chicken_Dance", "Chicken Dance"},

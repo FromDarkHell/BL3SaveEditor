@@ -10,6 +10,10 @@ using OakSave;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
 using BL3Tools.GameData.Items;
+using Newtonsoft.Json.Linq;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
 
 namespace BL3SaveEditor.Helpers {
 
@@ -60,7 +64,7 @@ namespace BL3SaveEditor.Helpers {
     }
     public class StringToCharacterClassConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if(value != null) {
+            if (value != null) {
                 Dictionary<string, PlayerClassSaveGameData> validClasses = BL3Save.ValidClasses;
                 PlayerClassSaveGameData val = (PlayerClassSaveGameData)value;
 
@@ -72,7 +76,7 @@ namespace BL3SaveEditor.Helpers {
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            if(value != null) {
+            if (value != null) {
                 PlayerClassSaveGameData data = BL3Save.ValidClasses.Where(x => x.Key.Equals((string)value)).First().Value;
                 return data;
             }
@@ -83,8 +87,8 @@ namespace BL3SaveEditor.Helpers {
     }
     public class CustomPlayerColorToColorConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            
-            if(value != null) {
+
+            if (value != null) {
                 CustomPlayerColorSaveGameData colorData = (CustomPlayerColorSaveGameData)value;
                 byte r = System.Convert.ToByte(colorData.AppliedColor.X * 255);
                 byte g = System.Convert.ToByte(colorData.AppliedColor.Y * 255);
@@ -92,12 +96,12 @@ namespace BL3SaveEditor.Helpers {
                 Color clr = Color.FromArgb(255, r, g, b);
                 return clr;
             }
-            
+
             return null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            if(value != null) {
+            if (value != null) {
                 Color clr = (Color)value;
 
                 Vec3 vecClr = new Vec3() {
@@ -131,16 +135,16 @@ namespace BL3SaveEditor.Helpers {
 
                 string customizationName = "";
                 if (param == "heads") {
-                    foreach(string customization in val) {
+                    foreach (string customization in val) {
                         // Check if the string is a head
-                        if(DataPathTranslations.headAssetPaths.ContainsKey(customization)) {
+                        if (DataPathTranslations.headAssetPaths.ContainsKey(customization)) {
                             customizationName = DataPathTranslations.headAssetPaths[customization];
                             break;
                         }
                     }
 
                 }
-                else if(param == "skins") {
+                else if (param == "skins") {
                     foreach (string customization in val) {
                         // Check if the string is a skin
                         if (DataPathTranslations.skinAssetPaths.ContainsKey(customization)) {
@@ -164,17 +168,17 @@ namespace BL3SaveEditor.Helpers {
 
                 List<string> customizations = chx.SelectedCustomizations;
                 string characterName = chx.GetCharacterString();
-                if(param == "heads") {
+                if (param == "heads") {
                     string headAssetPath = DataPathTranslations.HeadNamesDictionary[characterName].Where(x => DataPathTranslations.headAssetPaths[x] == selectedCustomization).FirstOrDefault();
                     for (int i = 0; i < customizations.Count; i++) {
-                        if(DataPathTranslations.headAssetPaths.ContainsKey(customizations[i])) {
+                        if (DataPathTranslations.headAssetPaths.ContainsKey(customizations[i])) {
                             customizations[i] = headAssetPath;
                             break;
                         }
                     }
-                    if(customizations.Count <= 0) customizations.Add(headAssetPath);
+                    if (customizations.Count <= 0) customizations.Add(headAssetPath);
                 }
-                else if(param == "skins") {
+                else if (param == "skins") {
                     string skinAssetPath = DataPathTranslations.SkinNamesDictionary[characterName].Where(x => DataPathTranslations.skinAssetPaths[x] == selectedCustomization).FirstOrDefault();
                     for (int i = 0; i < customizations.Count; i++) {
                         if (DataPathTranslations.skinAssetPaths.ContainsKey(customizations[i])) {
@@ -188,7 +192,7 @@ namespace BL3SaveEditor.Helpers {
 
                 return chx;
             }
-            
+
             if (value == null && chx != null) return chx;
             return null;
         }
@@ -217,7 +221,7 @@ namespace BL3SaveEditor.Helpers {
                     default:
                         break;
                 }
-                
+
                 if (currencyHash == 0) return 0;
 
                 int? quantity = chx.InventoryCategoryLists.Where(x => x.BaseCategoryDefinitionHash == currencyHash)?.Select(x => x.Quantity).FirstOrDefault();
@@ -230,7 +234,7 @@ namespace BL3SaveEditor.Helpers {
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             if (value != null && chx != null && currencyHash != 0) {
-                if(!chx.InventoryCategoryLists.Where(x => x.BaseCategoryDefinitionHash == currencyHash).Any()) {
+                if (!chx.InventoryCategoryLists.Where(x => x.BaseCategoryDefinitionHash == currencyHash).Any()) {
                     chx.InventoryCategoryLists.Add(new InventoryCategorySaveData() {
                         BaseCategoryDefinitionHash = currencyHash,
                         Quantity = System.Convert.ToInt32(value)
@@ -270,14 +274,14 @@ namespace BL3SaveEditor.Helpers {
             chx = (Character)value[0];
             bShowDbgMaps = (bool)value[1];
             playthroughToShow = (int)value[2];
-            
+
             if (playthroughToShow < 0) return null;
 
-            var playthroughData = chx.ActiveTravelStationsForPlaythroughs[Math.Min(playthroughToShow, chx.ActiveTravelStationsForPlaythroughs.Count-1)].ActiveTravelStations.Select(x => x.ActiveTravelStationName);
+            var playthroughData = chx.ActiveTravelStationsForPlaythroughs[Math.Min(playthroughToShow, chx.ActiveTravelStationsForPlaythroughs.Count - 1)].ActiveTravelStations.Select(x => x.ActiveTravelStationName);
 
             Dictionary<string, string> mapsToShow = bShowDbgMaps ? dbgMapsToShow : MapsToShow;
             List<BoolStringPair> result = new List<BoolStringPair>();
-            foreach(KeyValuePair<string, string> kvp in mapsToShow) {
+            foreach (KeyValuePair<string, string> kvp in mapsToShow) {
                 result.Add(new BoolStringPair(playthroughData.Contains(kvp.Key), kvp.Value));
             }
 
@@ -299,10 +303,10 @@ namespace BL3SaveEditor.Helpers {
         private Character chx = null;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if(value != null) {
+            if (value != null) {
                 chx = (Character)value;
                 string param = (string)parameter;
-                if(param == "list") return indexToString.ToList();
+                if (param == "list") return indexToString.ToList();
 
                 return indexToString[chx.LastPlayThroughIndex];
             }
@@ -323,11 +327,11 @@ namespace BL3SaveEditor.Helpers {
             if (value != null) {
                 prf = (Profile)value;
 
-                foreach(string humanName in DataPathTranslations.GuardianRankRewards.Values) {
+                foreach (string humanName in DataPathTranslations.GuardianRankRewards.Values) {
                     bool bUpdatedRankData = false;
-                    foreach(GuardianRankRewardSaveGameData rankData in prf.GuardianRank.RankRewards) {
+                    foreach (GuardianRankRewardSaveGameData rankData in prf.GuardianRank.RankRewards) {
                         string human = DataPathTranslations.GetHumanRewardString(rankData.RewardDataPath);
-                        if(human == humanName) {
+                        if (human == humanName) {
                             Console.WriteLine("Rank Data ({0}): {1}", humanName, rankData.NumTokens);
                             pairs.Add(new StringIntPair(humanName, rankData.NumTokens));
                             bUpdatedRankData = true;
@@ -351,7 +355,7 @@ namespace BL3SaveEditor.Helpers {
         private Profile prf = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             int amountOfSDUs = 0;
-            if(value != null && parameter != null) {
+            if (value != null && parameter != null) {
                 prf = (Profile)value;
                 string assetPath = ((string)parameter) == "LostLoot" ? DataPathTranslations.LLSDUAssetPath : DataPathTranslations.BankSDUAssetPath;
 
@@ -362,7 +366,7 @@ namespace BL3SaveEditor.Helpers {
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            if(value != null && parameter != null) {
+            if (value != null && parameter != null) {
                 string assetPath = ((string)parameter) == "LostLoot" ? DataPathTranslations.LLSDUAssetPath : DataPathTranslations.BankSDUAssetPath;
 
                 // I'm fairly certain this logic here isn't ACTUALLY needed but I'm adding it just for safety
@@ -386,7 +390,7 @@ namespace BL3SaveEditor.Helpers {
     public class MultiElementObjectBinder : IMultiValueConverter {
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
-            foreach(object obj in value) {
+            foreach (object obj in value) {
                 if (obj != null && obj != DependencyProperty.UnsetValue) {
                     return obj;
                 }
@@ -397,6 +401,218 @@ namespace BL3SaveEditor.Helpers {
 
         public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture) {
             return null;
+        }
+    }
+
+    public class IntegerToMayhemLevelConverter : IValueConverter {
+        private Borderlands3Serial serial = null;
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value != null) {
+                serial = (Borderlands3Serial)value;
+                return serial.GenericParts?.Where(x => x.Contains("Mayhem")).Select(x => System.Convert.ToInt32(x.Split(new string[] { "WeaponMayhemLevel_" }, StringSplitOptions.RemoveEmptyEntries).Last())).LastOrDefault();
+            }
+            return 0;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            int newValue = (int)value;
+
+            // Remove all mayhem level based parts when since the converter should do that stuff instead
+            serial.GenericParts?.RemoveAll(x => x.Contains("WeaponMayhemLevel_"));
+
+            if (newValue != 0) {
+                var assets = ((JArray)InventorySerialDatabase.InventoryDatabase["InventoryGenericPartData"]["assets"]).Children().Select(x => x.Value<string>()).ToList();
+
+                var mayhemParts = assets.Where(x => x.Contains("WeaponMayhemLevel"));
+
+                var mayhemPartToAdd = mayhemParts.Where(x => x.Contains(newValue.ToString("D2"))).FirstOrDefault();
+
+                // Maximum limit for parts is 63 because math
+                if (serial?.GenericParts.Count > 62) return serial;
+
+                serial?.GenericParts.Add(mayhemPartToAdd);
+            }
+
+            return serial;
+        }
+    }
+
+    public class ChallengeToBooleanConverter : IValueConverter {
+        private Character chx = null;
+
+        public static Dictionary<string, List<string>> stringToChallenges = new Dictionary<string, List<string>>() {
+            { "MayhemMode", new List<string>() { "/Game/GameData/Challenges/Account/Challenge_VaultReward_Mayhem.Challenge_VaultReward_Mayhem_C" } },
+            { "Analyzer", new List<string>() { "/Game/GameData/Challenges/Account/Challenge_VaultReward_Analyzer.Challenge_VaultReward_Analyzer_C" }  },
+            { "Resonator", new List<string>() { "/Game/GameData/Challenges/Account/Challenge_VaultReward_Resonator.Challenge_VaultReward_Resonator_C" } },
+
+            { "Artifacts", new List<string>() { "/Game/GameData/Challenges/Account/Challenge_VaultReward_ArtifactSlot.Challenge_VaultReward_ArtifactSlot_C" } },
+            { "ClassMods", new List<string>() { "/Game/GameData/Challenges/Character/Beastmaster/BP_Challenge_Beastmaster_ClassMod.BP_Challenge_Beastmaster_ClassMod_C", "/Game/GameData/Challenges/Character/Gunner/BP_Challenge_Gunner_ClassMod.BP_Challenge_Gunner_ClassMod_C", "/Game/GameData/Challenges/Character/Operative/BP_Challenge_Operative_ClassMod.BP_Challenge_Operative_ClassMod_C", "/Game/GameData/Challenges/Character/Siren/BP_Challenge_Siren_ClassMod.BP_Challenge_Siren_ClassMod_C" } },
+        };
+
+        private static List<string> GetChallengePathForChallenge(string challenge) {
+            if (stringToChallenges.ContainsKey(challenge))
+                return stringToChallenges[challenge];
+            else if (stringToChallenges.Any(x => x.Value.Contains(challenge)))
+                return stringToChallenges.Where(x => x.Value.Contains(challenge)).First().Value;
+
+            return null;
+        }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return false;
+            chx = (Character)value;
+            string mode = (string)parameter;
+
+            var challenges = GetChallengePathForChallenge(mode);
+            if (challenges == null) return false;
+
+            bool anyCompleted = false;
+            foreach (string challengePath in challenges) {
+                // Try to find the challenge
+                var challenge = chx.ChallengeDatas.Where(x => x.ChallengeClassPath.Equals(challengePath)).FirstOrDefault();
+
+                // Return false if the challenge somehow wasn't able to be found (???)
+                if (challenge == default(ChallengeSaveGameData)) continue;
+
+                anyCompleted |= challenge.CurrentlyCompleted;
+            }
+
+            return anyCompleted;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return chx;
+            string mode = (string)parameter;
+            var challenges = GetChallengePathForChallenge(mode);
+            if (challenges == null) return chx;
+
+            // Iterate over all of the possible challenges that map to the key.
+            foreach (string challengePath in challenges) {
+                bool bVal = (bool)value;
+
+                // Try to find the challenge
+                var challenge = chx.ChallengeDatas.Where(x => x.ChallengeClassPath.Equals(challengePath)).FirstOrDefault();
+                if (challenge == default(ChallengeSaveGameData)) {
+                    chx.ChallengeDatas.Add(new ChallengeSaveGameData() {
+                        IsActive = !bVal,
+                        ChallengeRewardInfoes = new List<OakChallengeRewardSaveGameData>(),
+                        ChallengeClassPath = challengePath,
+                        CompletedCount = System.Convert.ToInt32(bVal),
+                        CompletedProgressLevel = 0,
+                        CurrentlyCompleted = bVal,
+                        ProgressCounter = 0,
+                        StatInstanceStates = new List<ChallengeStatSaveGameData>()
+                    });
+                }
+                else {
+                    challenge.CurrentlyCompleted = bVal;
+                    challenge.IsActive = !bVal;
+                    challenge.CompletedCount = System.Convert.ToInt32(bVal);
+                    challenge.ProgressCounter = 0;
+                    challenge.CompletedProgressLevel = 0;
+                }
+            }
+
+            if(mode == "ClassMods") {
+                ItemSlotConverter.GetEquippedSlotForName("ClassMod").Enabled = (bool)value;
+                if (!((bool)value)) 
+                    ItemSlotConverter.GetEquippedSlotForName("ClassMod").InventoryListIndex = -1;
+            }
+            else if(mode == "Artifacts") {
+                ItemSlotConverter.GetEquippedSlotForName("Artifact").Enabled = (bool)value;
+                if (!((bool)value))
+                    ItemSlotConverter.GetEquippedSlotForName("Artifact").InventoryListIndex = -1;
+            }
+
+            return chx;
+        }
+    }
+
+    public class ItemSlotConverter : IValueConverter {
+        public static Character chx = null;
+
+        public static EquippedInventorySaveGameData GetEquippedSlotForName(string slot) {
+            if (!DataPathTranslations.SlotToPathDictionary.ContainsKey(slot)) return null;
+            string slotDataPath = DataPathTranslations.SlotToPathDictionary[slot];
+            var slotToEdit = chx.EquippedInventoryLists.Where(x => x.SlotDataPath == slotDataPath).FirstOrDefault();
+            // Somehow unable to find the slot...?
+            if (slotToEdit == default(EquippedInventorySaveGameData)) return null;
+
+            return slotToEdit;
+        }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return false;
+            chx = (Character)value;
+            string slot = (string)parameter;
+            var slotToEdit = GetEquippedSlotForName(slot);
+
+            return slotToEdit.Enabled;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return chx;
+            string slot = (string)parameter;
+            var slotToEdit = GetEquippedSlotForName(slot);
+
+            if (slotToEdit == null) {
+                chx.EquippedInventoryLists.Add(new EquippedInventorySaveGameData() {
+                    Enabled = true,
+                    InventoryListIndex = -1,
+                    SlotDataPath = DataPathTranslations.SlotToPathDictionary[slot],
+                    TrinketDataPath = ""
+                });
+            }
+            else {
+                bool bValue = (bool)value;
+                slotToEdit.Enabled = bValue;
+                // When disabling the slot, probably best to remove the equipped item as well.
+                if (!bValue) {
+                    slotToEdit.InventoryListIndex = -1;
+                    slotToEdit.TrinketDataPath = "";
+                }
+            }
+
+            return chx;
+        }
+    }
+
+    public class CalcConverter : IValueConverter {
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            double val = (double)value;
+            string expressionString = parameter as string;
+            string type = expressionString.Split(';').First();
+            string offset = expressionString.Split(';').Last();
+
+            switch(type) {
+                case "Subtract":
+                case "Minus":
+                    return val - System.Convert.ToDouble(offset);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SerialPartConverter : IValueConverter {
+        private Borderlands3Serial serial;
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return new List<string>();
+            serial = (Borderlands3Serial)value;
+            List<string> fullNameParts = (List<string>)serial.GetType().GetProperty((string)parameter).GetValue(serial, null);
+
+            var parts = fullNameParts.Select(x => x.Split('.').Last()).ToList();
+
+            return parts;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
         }
     }
 
@@ -438,4 +654,25 @@ namespace BL3SaveEditor.Helpers {
         }
     }
 
+    public static class Helpers {
+        public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject parent) where T : DependencyObject {
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
+
+            var queue = new Queue<DependencyObject>(new[] { parent });
+
+            while (queue.Any()) {
+                var reference = queue.Dequeue();
+                var count = VisualTreeHelper.GetChildrenCount(reference);
+
+                for (var i = 0; i < count; i++) {
+                    var child = VisualTreeHelper.GetChild(reference, i);
+                    if (child is T children)
+                        yield return children;
+
+                    queue.Enqueue(child);
+                }
+            }
+        }
+    }
 }

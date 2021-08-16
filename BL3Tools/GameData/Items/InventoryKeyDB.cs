@@ -18,6 +18,8 @@ namespace BL3Tools.GameData.Items {
         /// </summary>
         public static Dictionary<string, string> KeyDictionary { get; private set; } = null;
 
+        public static Dictionary<string, List<string>> ItemTypeToKey { get; private set; } = null;
+
         private static readonly string embeddedDatabasePath = "BL3Tools.GameData.Items.Mappings.balance_to_inv_key.json";
 
         static InventoryKeyDB() {
@@ -45,6 +47,23 @@ namespace BL3Tools.GameData.Items {
                 KeyDictionary = db.ToObject<Dictionary<string, string>>();
                 KeyDatabase = db;
 
+                var invKeys = KeyDictionary.Values.Distinct();
+
+                ItemTypeToKey = new Dictionary<string, List<string>>() {
+                    { "Grenades", invKeys.Where(x => x.Contains("_GrenadeMod_")).ToList() },
+                    { "Shields", invKeys.Where(x => x.Contains("_Shield_")).ToList() },
+                    { "Class Mods", invKeys.Where(x => x.Contains("_ClassMod_")).ToList() },
+                    { "Artifacts", invKeys.Where(x => x.Contains("_Artifact_")).ToList() },
+                    { "Assault Rifles", invKeys.Where(x => x.Contains("_AR_")).ToList() },
+                    { "Pistols", invKeys.Where(x => x.Contains("_Pistol_") || x.Contains("_PS_")).ToList() },
+                    { "SMGs", invKeys.Where(x => x.Contains("_SM_") || x.Contains("_SMG")).ToList() },
+                    { "Heavy Weapons", invKeys.Where(x => x.Contains("_HW_")).ToList() },
+                    { "Shotguns", invKeys.Where(x => x.Contains("_SG_") || x.Contains("_Shotgun_")).ToList() },
+                    { "Sniper Rifles", invKeys.Where(x => x.Contains("_SR_")).ToList() },
+                    { "Eridian Fabricator", invKeys.Where(x => x.Contains("EridianFabricator")).ToList() },
+                    { "Customizations", invKeys.Where(x => x.Contains("Customization")).ToList() }
+                };
+
                 return true;
             }
             catch (Exception) {
@@ -56,12 +75,15 @@ namespace BL3Tools.GameData.Items {
 
 
         public static string GetKeyForBalance(string balance) {
+
             // Check if the name exists by default
             if (!balance.Contains(".")) balance = $"{balance}.{balance.Split('/').LastOrDefault()}";
-            balance = balance.ToLower();
-            if (KeyDictionary.ContainsKey(balance)) 
-                return KeyDictionary[balance];
 
+            if (KeyDictionary.ContainsKey(balance))
+                return KeyDictionary[balance];
+            else if (KeyDictionary.ContainsKey(balance.ToLower())) 
+                return KeyDictionary[balance.ToLower()];
+            
             return null;
         }
     }

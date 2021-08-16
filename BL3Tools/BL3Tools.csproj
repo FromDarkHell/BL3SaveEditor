@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -85,30 +87,38 @@
     <Compile Include="BL3Tools.cs" />
     <Compile Include="Decryption\CRC32.cs" />
     <Compile Include="Decryption\ProfileBogoCrypt.cs" />
+    <Compile Include="Decryption\ProfileBogoCrypt.cs" />
     <Compile Include="Decryption\SaveBogoCrypt.cs" />
     <Compile Include="GameData\DataPathTranslations.cs" />
+    <Compile Include="GameData\Experience.cs" />
     <Compile Include="GameData\Experience.cs" />
     <Compile Include="GameData\Items\InventoryKeyDB.cs" />
     <Compile Include="GameData\Items\InventoryNameDatabase.cs" />
     <Compile Include="GameData\Items\InventorySerialDatabase.cs" />
     <Compile Include="GameData\Items\Borderlands3Serial.cs" />
     <Compile Include="GameData\SDU.cs" />
+    <Compile Include="GameData\SDU.cs" />
     <Compile Include="GVAS\GVASSave.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Save.cs" />
     <Compile Include="Save.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FixProtobufs.ps1" />
     <EmbeddedResource Include="GameData\Items\SerialDB\Inventory Serial Number Database.json" />
-    <EmbeddedResource Include="GameData\Items\Mappings\balance_name_mapping.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_key.json" />
+    <EmbeddedResource Include="GameData\Items\Mappings\part_name_mapping.json" />
+    <EmbeddedResource Include="GameData\Items\Mappings\prefix_name_mapping.json" />
+    <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_data.json" />
     <None Include="GameData\Items\Mappings\README.md" />
     <None Include="GameData\Items\SerialDB\README.md" />
+    <EmbeddedResource Include="GameData\Mappings\fast_travel_to_name.json" />
     <None Include="packages.config" />
     <AdditionalFiles Include="Protobufs\OakShared.proto" />
     <AdditionalFiles Include="Protobufs\OakProfile.proto" />
     <AdditionalFiles Include="Protobufs\OakSave.proto" />
+    <None Include="Scripts\README.md" />
     <Protobuf Include="Protobufs/OakShared.proto" Link="OakShared.proto" />
     <Protobuf Include="Protobufs/OakProfile.proto" Link="OakProfile.proto" />
     <Protobuf Include="Protobufs/OakSave.proto" Link="OakSave.proto" />
@@ -118,6 +128,12 @@
       <Project>{b93ff5db-ffef-4f81-812e-f5fdf8cdfbbe}</Project>
       <Name>IOTools</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\BalanceToInventoryData.py" />
+    <Content Include="Scripts\BalanceToInventoryKey.py" />
+    <Content Include="Scripts\FastTravelDumper.py" />
+    <Content Include="Scripts\PartToName.py" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

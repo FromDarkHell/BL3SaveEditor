@@ -386,5 +386,10 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+
+# Scripts results
 CustomizationGenerator/output.txt
 CustomizationGenerator/sheetData.xlsx
+
+BL3Tools/Scripts/Data/

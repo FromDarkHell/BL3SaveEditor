@@ -52,13 +52,12 @@ namespace BL3Tools {
 
     public class BL3Profile : UE3Save {
         public BL3Profile(GVASSave gvasSave, Profile profile) {
-            this.GVASSave = gvasSave;
+            this.GVASData = gvasSave;
             Profile = profile;
 
             BankItems = Profile.BankInventoryLists.Select(x => Borderlands3Serial.DecryptSerial(x)).ToList();
         }
 
-        public GVASSave GVASSave { get; }
         public Profile Profile { get; set; }
 
         public List<Borderlands3Serial> BankItems { get; set; } = null;

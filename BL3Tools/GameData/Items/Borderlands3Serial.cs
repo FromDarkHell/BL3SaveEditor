@@ -26,7 +26,6 @@ using IOTools;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
-using System.IO;
 
 namespace BL3Tools.GameData.Items {
 
@@ -40,21 +39,22 @@ namespace BL3Tools.GameData.Items {
     /// A class representing a Borderlands 3 Serial Item
     /// </summary>
     public class Borderlands3Serial {
-        public byte SerialVersion { get; set; }
-        public uint Seed { get; set; }
-        public ushort Checksum { get; set; }
-        public int SerialDatabaseVersion { get; set; }
-        public string Balance { get; set; }
-        public string ShortNameBalance { get; set; }
-        public string UserFriendlyName { get; set; }
-        public int Level { get; set; }
-        public string InventoryKey { get; set; }
-        public string InventoryData { get; set; }
-        public string Manufacturer { get; set; }
-        public List<string> Parts { get; set; }
-        public List<string> GenericParts { get; set; }
-        public List<int> UnkData1 { get; set; }
-        public int AmountRerolled { get; set; }
+        public byte SerialVersion { get; set; } = 0x03;
+        public uint Seed { get; set; } = 0x00;
+        public ushort Checksum { get; set; } = 0x00;
+        public int SerialDatabaseVersion { get; set; } = (int)InventorySerialDatabase.MaximumVersion;
+        public string Balance { get; set; } = "";
+        public string ShortNameBalance { get; set; } = "";
+        public string UserFriendlyName { get; set; } = "";
+        public int Level { get; set; } = PlayerXP._XPMinimumLevel;
+        public string InventoryKey { get; set; } = "";
+        public string InventoryData { get; set; } = "";
+        public string Manufacturer { get; set; } = "";
+        public List<string> Parts { get; set; } = new List<string>();
+        public List<string> GenericParts { get; set; } = new List<string>();
+        public List<int> UnkData1 { get; set; } = new List<int>();
+        public int AmountRerolled { get; set; } = 0;
+        public byte[] OriginalData { get; set; } = null;
 
         public string EncryptSerial(uint seed = 0) {
             byte[] data = EncryptSerialToBytes(seed);
@@ -213,15 +213,15 @@ namespace BL3Tools.GameData.Items {
             int level = reader.ReadInt32(7);
 
             string shortBalance = balance.Split('.').LastOrDefault();
-            string userFriendlyName = InventoryNameDatabase.GetNameForBalance(balance);
-
             string inventoryKey = InventoryKeyDB.GetKeyForBalance(balance);
 
             int amountRerolled = 0;
-            List<string> parts = null;
-            List<string> genericParts = null;
-            List<int> additionalData = null;
-            if(inventoryKey != null) {
+            List<string> parts = new List<string>();
+            List<string> genericParts = new List<string>();
+            List<int> additionalData = new List<int>();
+
+
+            if (inventoryKey != null) {
                 // Get the main actual parts on it
                 parts = EatBitArrayForCategory(reader, inventoryKey, SerialDatabaseVersion, 6);
 
@@ -246,6 +246,15 @@ namespace BL3Tools.GameData.Items {
                     throw new BL3Tools.BL3Exceptions.SerialParseException(Convert.ToBase64String(serial), serialVersion, SerialDatabaseVersion, "Zero-Padding incorrect");
             }
 
+            // Customizations don't have parts so we do this;
+            // For note, you can also use InventoryNameDatabase.GetCustomizationNameForBalance but in this case it will give a faster result if we do this.
+            var nameParts = parts.Select(x => (string)x.Clone()).ToList();
+            nameParts.Add(balance);
+            string userFriendlyName = InventoryNameDatabase.GetNameForParts(nameParts);
+            
+            // This means we've got some sort of item that we don't know entirely have info on...
+            if (string.IsNullOrEmpty(userFriendlyName)) userFriendlyName = shortBalance;
+
             Borderlands3Serial serialObject = new Borderlands3Serial() {
                 SerialVersion = serialVersion,
                 Seed = originalSeed,
@@ -261,10 +270,35 @@ namespace BL3Tools.GameData.Items {
                 AmountRerolled = amountRerolled,
                 Parts = parts,
                 GenericParts = genericParts,
-                UnkData1 = additionalData
+                UnkData1 = additionalData,
+                OriginalData = serial
             };
 
             return serialObject;
+        }
+
+        /// <summary>
+        /// Creates a <c>Borderlands3Serial</c> object based off of the balance data passed in
+        /// Use this function when you want to create a new item
+        /// </summary>
+        /// <param name="balance">Balance of the item to create; can be long or short</param>
+        /// <returns>A Borderlands3Serial object representing the balance; completely partless etc</returns>
+        public static Borderlands3Serial CreateSerialFromBalanceData(string balance) {
+            string longBalance = InventorySerialDatabase.GetBalanceFromShortName(balance);
+            if (longBalance == null) longBalance = balance;
+
+            string shortBalance = InventorySerialDatabase.GetShortNameFromBalance(longBalance);
+            string inventoryKey = InventoryKeyDB.GetKeyForBalance(longBalance);
+            string userFriendlyName = (string)shortBalance.Clone();
+
+            Borderlands3Serial serial = new Borderlands3Serial() {
+                Balance = balance,
+                ShortNameBalance = shortBalance,
+                InventoryKey = inventoryKey,
+                UserFriendlyName = userFriendlyName
+            };
+
+            return serial;
         }
 
         private static List<string> EatBitArrayForCategory(BitReader reader, string category, int version, int bitsToEat) {

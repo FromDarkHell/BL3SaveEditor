@@ -5,7 +5,8 @@ using ProtoBuf;
 using BL3Tools.GVAS;
 using BL3Tools.Decryption;
 using OakSave;
-
+using System.Linq;
+using BL3Tools.GameData.Items;
 
 namespace BL3Tools {
 
@@ -18,14 +19,16 @@ namespace BL3Tools {
 
 
             public class SerialParseException : Exception {
+                public bool knowCause = false;
+
                 public SerialParseException() : base("Invalid BL3 Serial...") { }
                 public SerialParseException(string serial) : base(String.Format("Invalid Serial: {0}", serial)) { }
-                public SerialParseException(string serial, int version) : base(String.Format("Invalid Serial: \"{0}\"; Version: {1}", serial, version)) { }
-                public SerialParseException(string serial, int version, uint originalChecksum, uint calculatedChecksum) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Checksum Difference: {2} vs {3}", serial, version, originalChecksum, calculatedChecksum)) { }
+                public SerialParseException(string serial, int version) : base(String.Format("Invalid Serial: \"{0}\"; Version: {1}", serial, version)) { knowCause = true; }
+                public SerialParseException(string serial, int version, uint originalChecksum, uint calculatedChecksum) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Checksum Difference: {2} vs {3}", serial, version, originalChecksum, calculatedChecksum)) { knowCause = true; }
 
-                public SerialParseException(string serial, int version, int databaseVersion) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}", serial, version, databaseVersion)) { }
+                public SerialParseException(string serial, int version, int databaseVersion) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}", serial, version, databaseVersion)) { knowCause = true;  }
 
-                public SerialParseException(string serial, int version, int databaseVersion, string oddity) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}; Error: {3}", serial, version, databaseVersion, oddity)) { }
+                public SerialParseException(string serial, int version, int databaseVersion, string oddity) : base(String.Format("Invalid Serial: \"{0}\"; Serial Version: {1}; Database Version: {2}; Error: {3}", serial, version, databaseVersion, oddity)) { knowCause = true; }
 
             }
         }
@@ -100,12 +103,43 @@ namespace BL3Tools {
                 using (var stream = new MemoryStream()) {
                     switch (ue3Save.GVASData.sgType) {
                         case "BP_DefaultOakProfile_C":
-                            Serializer.Serialize<Profile>(stream, ((BL3Profile)ue3Save).Profile);
+                            // This is probably a little bit unsafe and costly but *ehh*?
+                            BL3Profile vx = (BL3Profile)ue3Save;
+
+                            vx.Profile.BankInventoryLists.Clear();
+                            // Add back all the items onto the bank
+                            vx.Profile.BankInventoryLists.AddRange(vx.BankItems.Select(x => x.EncryptSerialToBytes()));
+
+                            Serializer.Serialize<Profile>(stream, vx.Profile);
                             result = stream.ToArray();
                             ProfileBogoCrypt.Encrypt(result, 0, result.Length);
                             break;
                         case "OakSaveGame":
-                            Serializer.Serialize<Character>(stream, ((BL3Save)ue3Save).Character);
+                            BL3Save save = (BL3Save)ue3Save;
+                            // Unlike the profiles, we can't just remove all of the data from the save's inventory and then readd it
+                            // Saves store other data in the items as well so we can't do that
+                            foreach(Borderlands3Serial serial in save.InventoryItems) {
+                                // If we don't have "original data", just simply the item
+                                if (serial.OriginalData == null) {
+                                    save.Character.InventoryItems.Add(new OakInventoryItemSaveGameData() {
+                                        DevelopmentSaveData = null,
+                                        Flags = 0x00,
+                                        PickupOrderIndex = 8008,
+                                        WeaponSkinPath = "",
+                                        ItemSerialNumber = serial.EncryptSerialToBytes()
+                                    });
+                                }
+                                else {
+                                    foreach(OakInventoryItemSaveGameData item in save.Character.InventoryItems) {
+                                        if (item.ItemSerialNumber != serial.OriginalData) continue;
+                                        
+                                        item.ItemSerialNumber = serial.EncryptSerialToBytes();
+                                    }
+                                }
+                            }
+
+
+                            Serializer.Serialize<Character>(stream, save.Character);
                             result = stream.ToArray();
                             SaveBogoCrypt.Encrypt(result, 0, result.Length);
                             break;
