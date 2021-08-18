@@ -187,18 +187,6 @@ namespace BL3SaveEditor {
         }
         public Borderlands3Serial SelectedSerial { get; set; }
 
-        public ListCollectionView MainParts { 
-            get {
-                if (SelectedSerial == null) return null;
-                return new ListCollectionView(SelectedSerial.Parts.Select(x => x.Split('.').Last()).ToList());
-            }
-            set {
-                if (SelectedSerial == null) return;
-
-                int p = -1;
-            }
-        }
-
         public ListCollectionView ValidParts {
             get {
                 if (SelectedSerial == null) return null;
@@ -564,14 +552,63 @@ namespace BL3SaveEditor {
                 RefreshBackpackView();
             }
         }
-        private void ItemPart_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (e.Handled || e.RemovedItems.Count < 1) return;
+        private void AddItemPartBtn_Click(object sender, RoutedEventArgs e) {
+            if (SelectedSerial == null) return;
+            // Update the valid parts
+            ValidParts.Refresh();
+
+            SelectedSerial.Parts.Add(ValidParts.SourceCollection.Cast<string>().FirstOrDefault());
+            ListView obj = ((ListView)FindName("PartsListView"));
+            obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
+        }
+        private void DeleteItemPartBtn_Click(object sender, RoutedEventArgs e) {
+            ListView obj = ((ListView)FindName("PartsListView"));
+
+            if (obj.SelectedIndex != -1) 
+                SelectedSerial.Parts.RemoveAt(obj.SelectedIndex);
+            
+            // Update the valid parts
+            ValidParts.Refresh();
+            obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
+        }
+
+        // This bit of logic is here so that way the ListView's selected value stays up to date with the combobox's selected value :/
+        private void ComboBox_DropDownChanged(object sender, EventArgs e) {
+            ComboBox box = ((ComboBox)sender);
+            ListView parent = box.FindParent<ListView>();
+
+            parent.SelectedValue = box.SelectedValue;
+        }
+
+        private string GetSelectedPart(string type, object sender, SelectionChangedEventArgs e) {
+            if (e.Handled || e.RemovedItems.Count < 1) return null;
+            ComboBox box = ((ComboBox)sender);
 
             var newPart = e.AddedItems.Cast<string>().FirstOrDefault();
             var oldPart = e.RemovedItems.Cast<string>().FirstOrDefault();
-            if (newPart == default || oldPart == default) return;
+            if (newPart == default || oldPart == default) return null;
 
-            int p = -1;
+            Console.WriteLine($"Changed \"{oldPart}\" to \"{newPart}\"");
+            ListView parent = box.FindParent<ListView>();
+            if (parent.SelectedIndex == -1) return null;
+
+            string assetCat = (type == "Parts" ? SelectedSerial.InventoryKey : "InventoryGenericPartData");
+            string fullName = InventorySerialDatabase.GetPartFromShortName(assetCat, newPart);
+            if (fullName == default) fullName = newPart;
+
+            return fullName;
+        }
+
+        private void ItemPart_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            ListView parent = ((ComboBox)sender).FindParent<ListView>();
+            string propertyName = parent.Name.Split(new string[] { "ListView" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if (propertyName == default) return;
+
+            string fullName = GetSelectedPart(propertyName, sender, e);
+            if (fullName == null) return;
+
+            List<string>  parts = (List<string>)SelectedSerial.GetType().GetProperty((string)propertyName).GetValue(SelectedSerial, null);
+            parts[parent.SelectedIndex] = fullName;
         }
 
         #endregion

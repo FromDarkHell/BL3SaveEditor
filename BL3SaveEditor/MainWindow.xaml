@@ -2,9 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:BL3SaveEditor"
-        xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-        xmlns:controls="clr-namespace:BL3SaveEditor.Controls"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BL3SaveEditor"
+        xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" 
+        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -648,7 +649,7 @@
                                             Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}"
                                             Margin="0,31,10,39">
                                         <Grid VerticalAlignment="Top">
-                                            <ListView VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
+                                            <ListView Name="PartsListView" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
                                                     SelectionMode="Single" ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
                                                     Height="215">
                                                 <ListView.Resources>
@@ -664,7 +665,8 @@
                                                                     HorizontalAlignment="Stretch"
                                                                     HorizontalContentAlignment="Left"
                                                                     SelectedValue="{Binding Path=., Mode=TwoWay}"
-                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidParts}">
+                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidParts}"
+                                                                    DropDownOpened="ComboBox_DropDownChanged" DropDownClosed="ComboBox_DropDownChanged">
                                                                 <ComboBox.ItemsPanel>
                                                                     <ItemsPanelTemplate>
                                                                         <VirtualizingStackPanel
@@ -682,9 +684,9 @@
                                     </ScrollViewer>
 
                                     <Button Content="Delete" HorizontalAlignment="Left" Margin="177,0,0,10"
-                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="0" />
+                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="0" Click="DeleteItemPartBtn_Click"/>
                                     <Button Content="Add" HorizontalAlignment="Right" Margin="0,0,194,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="0" />
+                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="0" Click="AddItemPartBtn_Click" />
 
                                     <ScrollViewer Name="GenericPartScrollViewer" HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
@@ -692,7 +694,7 @@
                                             Margin="10,31,0,39" Grid.Column="1">
                                         <Grid VerticalAlignment="Top">
                                             <ListView
-                                                    DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
+                                                    Name="GenericPartsListView" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
                                                     SelectionMode="Single"
                                                     ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}"
                                                     Height="215">
@@ -709,7 +711,9 @@
                                                                     HorizontalAlignment="Stretch"
                                                                     HorizontalContentAlignment="Left"
                                                                     SelectedValue="{Binding Path=.}"
-                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidGenerics}">
+                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidGenerics}"
+                                                                    DropDownOpened="ComboBox_DropDownChanged"
+                                                                    DropDownClosed="ComboBox_DropDownChanged">
                                                                 <ComboBox.ItemsPanel>
                                                                     <ItemsPanelTemplate>
                                                                         <VirtualizingStackPanel
@@ -729,7 +733,7 @@
                                     <Button Content="Delete" HorizontalAlignment="Left" Margin="177,0,0,10"
                                             VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="1" />
                                     <Button Content="Add" HorizontalAlignment="Right" Margin="0,0,184,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="1" />
+                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="1"/>
                                     <Label Content="Generic Parts" HorizontalContentAlignment="Center"
                                             HorizontalAlignment="Stretch" Margin="10,13,2,0" VerticalAlignment="Top"
                                             Grid.Column="1" Height="16" />

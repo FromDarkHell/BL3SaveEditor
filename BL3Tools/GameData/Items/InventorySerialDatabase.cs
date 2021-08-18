@@ -131,6 +131,7 @@ namespace BL3Tools.GameData.Items {
             return null;
         }
 
+
         /// <summary>
         /// Given <paramref name="shortName"/>, get the balance of the short name
         /// </summary>
@@ -141,6 +142,19 @@ namespace BL3Tools.GameData.Items {
             string balance = balances.FirstOrDefault(x => x.EndsWith(shortName));
 
             return string.IsNullOrEmpty(balance) ? null : balance;
+        }
+
+        /// <summary>
+        /// Given a part <paramref name="category"/>, get the full name of <paramref name="shortName"/>
+        /// </summary>
+        /// <param name="category">Category of the part fills</param>
+        /// <param name="shortName">The short name of the part</param>
+        /// <returns></returns>
+        public static string GetPartFromShortName(string category, string shortName) {
+            var parts = ((JArray)InventoryDatabase[category]["assets"]).Children().Select(x => x.Value<string>());
+            string part = parts.FirstOrDefault(x => x.EndsWith(shortName));
+
+            return string.IsNullOrEmpty(part) ? null : part;
         }
 
         /// <summary>

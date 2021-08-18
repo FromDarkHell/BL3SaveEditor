@@ -247,7 +247,6 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
-
     public class TravelStationConverter : IMultiValueConverter {
         private Character chx = null;
         private bool bShowDbgMaps = false;
@@ -294,7 +293,6 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
-
     public class PlaythroughToStringConverter : IValueConverter {
         private static readonly string[] indexToString = new string[] {
             "NVHM",
@@ -318,7 +316,6 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
-
     public class GuardianRankToDataGridConverter : IValueConverter {
         private Profile prf = null;
 
@@ -350,7 +347,6 @@ namespace BL3SaveEditor.Helpers {
             return prf;
         }
     }
-
     public class ProfileSDUToIntegerConverter : IValueConverter {
         private Profile prf = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -386,7 +382,6 @@ namespace BL3SaveEditor.Helpers {
             return prf;
         }
     }
-
     public class MultiElementObjectBinder : IMultiValueConverter {
 
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
@@ -403,7 +398,6 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
-
     public class IntegerToMayhemLevelConverter : IValueConverter {
         private Borderlands3Serial serial = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -436,7 +430,6 @@ namespace BL3SaveEditor.Helpers {
             return serial;
         }
     }
-
     public class ChallengeToBooleanConverter : IValueConverter {
         private Character chx = null;
 
@@ -527,7 +520,6 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
-
     public class ItemSlotConverter : IValueConverter {
         public static Character chx = null;
 
@@ -576,7 +568,6 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
-
     public class CalcConverter : IValueConverter {
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -598,7 +589,6 @@ namespace BL3SaveEditor.Helpers {
             throw new NotImplementedException();
         }
     }
-
     public class SerialPartConverter : IValueConverter {
         private Borderlands3Serial serial;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -615,7 +605,6 @@ namespace BL3SaveEditor.Helpers {
             throw new NotImplementedException();
         }
     }
-
     #endregion
 
     public class StringIntPair {
@@ -626,7 +615,6 @@ namespace BL3SaveEditor.Helpers {
             Value = val;
         }
     }
-
     public class BoolStringPair {
         public bool booleanVar { get; set; } = false;
         public string Value { get; set; } = "";
@@ -635,7 +623,6 @@ namespace BL3SaveEditor.Helpers {
             Value = val;
         }
     }
-
     public class StringSerialPair {
         public string Val1 { get; set; } = "";
         public Borderlands3Serial Val2 { get; set; } = null;
@@ -673,6 +660,32 @@ namespace BL3SaveEditor.Helpers {
                     queue.Enqueue(child);
                 }
             }
+        }
+
+        /// <summary>
+        /// Recursively finds the specified named parent in a control hierarchy
+        /// </summary>
+        /// <typeparam name="T">The type of the targeted Find</typeparam>
+        /// <param name="child">The child control to start with</param>
+        /// <returns></returns>
+        public static T FindParent<T>(this DependencyObject child) where T : DependencyObject {
+            if (child == null) return null;
+
+            T foundParent = null;
+            var currentParent = VisualTreeHelper.GetParent(child);
+
+            do {
+                var frameworkElement = currentParent as FrameworkElement;
+                if (frameworkElement is T) {
+                    foundParent = (T)currentParent;
+                    break;
+                }
+
+                currentParent = VisualTreeHelper.GetParent(currentParent);
+
+            } while (currentParent != null);
+
+            return foundParent;
         }
     }
 }
