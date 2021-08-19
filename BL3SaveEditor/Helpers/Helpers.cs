@@ -347,6 +347,40 @@ namespace BL3SaveEditor.Helpers {
             return prf;
         }
     }
+    public class KeyToIntegerConverter : IValueConverter {
+        private Profile prf = null;
+
+        public static Dictionary<string, uint> stringToHash = new Dictionary<string, uint>() {
+            { "GoldenKeys", DataPathTranslations.GoldenKeyHash },
+            { "DiamondKeys", DataPathTranslations.DiamondKeyHash }
+        };
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return 0;
+            
+            prf = (Profile)value;
+            uint hash = stringToHash[(string)parameter];
+            return prf.BankInventoryCategoryLists.Where(x => x.BaseCategoryDefinitionHash == hash).Select(x => x.Quantity).FirstOrDefault();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value == null || parameter == null) return prf;
+            uint hash = stringToHash[(string)parameter];
+
+            var prop = prf.BankInventoryCategoryLists.Where(x => x.BaseCategoryDefinitionHash == hash).FirstOrDefault();
+            if(prop != default) {
+                prop.Quantity = (int)value;
+            }
+            else {
+                prf.BankInventoryCategoryLists.Add(new InventoryCategorySaveData() {
+                    BaseCategoryDefinitionHash = hash,
+                    Quantity = (int)value
+                });
+            }
+
+            return prf;
+        }
+    }
     public class ProfileSDUToIntegerConverter : IValueConverter {
         private Profile prf = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {

@@ -56,11 +56,14 @@ namespace BL3Tools {
             Profile = profile;
 
             BankItems = Profile.BankInventoryLists.Select(x => Borderlands3Serial.DecryptSerial(x)).ToList();
+            LostLootItems = Profile.LostLootInventoryLists.Select(x => Borderlands3Serial.DecryptSerial(x)).ToList();
         }
 
         public Profile Profile { get; set; }
 
         public List<Borderlands3Serial> BankItems { get; set; } = null;
+
+        public List<Borderlands3Serial> LostLootItems { get; set; } = null;
     }
 
 }

@@ -2,10 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:BL3SaveEditor"
-        xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" 
-        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:BL3SaveEditor"
+        xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -35,6 +33,8 @@
 
         <helpers:GuardianRankToDataGridConverter x:Key="GuardianRankToDataGridConverter1" />
         <helpers:ProfileSDUToIntegerConverter x:Key="SDUConverter1" />
+        <helpers:KeyToIntegerConverter x:Key="KeyToIntegerConverter1" />
+
         <helpers:MultiElementObjectBinder x:Key="MultiElementObjectBinder1" />
         <helpers:IntegerToMayhemLevelConverter x:Key="IntegerToMayhemLevelConverter1" />
         <helpers:ChallengeToBooleanConverter x:Key="ChallengeToBooleanConverter1" />
@@ -51,8 +51,6 @@
                     <Label FontFamily="Segoe UI" FontSize="14" Content="Debug" FontWeight="Medium" />
                 </StackPanel>
             </Button>
-            <Button Content="?" Style="{DynamicResource {x:Static adonisUi:Styles.WindowButton}}" FontFamily="Segoe UI"
-                    FontSize="14" Click="Info_Click" />
         </StackPanel>
     </adonisControls:AdonisWindow.TitleBarContent>
     <Grid>
@@ -134,9 +132,9 @@
                             HorizontalAlignment="Stretch" Margin="116,66,328,0" VerticalAlignment="Top"
                             ToolTip="Format: Days.Hours:Minutes:Seconds" />
 
-                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="256" Margin="10,0,658,0"
+                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="149" Margin="10,0,658,0"
                             VerticalAlignment="Bottom" IsExpanded="True">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="200">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="129">
                             <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Skills"
                                     HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130"
                                     ToolTip="Imports the skills from a different save" />
@@ -149,27 +147,6 @@
                             <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Stats"
                                     HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Width="130"
                                     ToolTip="Imports statistics / other data from a different save" />
-                        </Grid>
-                    </Expander>
-                    <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="256" Margin="180,115,0,0"
-                            VerticalAlignment="Bottom" Width="170" IsExpanded="True">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="195">
-                            <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"
-                                    TextAlignment="Center" Width="170">
-                                <Run Text="This edits all saves at once." />
-                                <LineBreak />
-                                <Run Text="Please make backups." />
-                            </TextBlock>
-
-                            <Button Name="AdjustSaveLevelsBtn" Content="Adjust Save Levels" HorizontalAlignment="Left"
-                                    Margin="20,40,0,0" VerticalAlignment="Top" Width="130"
-                                    ToolTip="Adjusts the gear and save levels of all of the saves in a folder." />
-                            <Button Content="Inject Guardian Rank" HorizontalAlignment="Left" Margin="20,69,0,0"
-                                    VerticalAlignment="Top" Width="130" RenderTransformOrigin="0.5,0.083"
-                                    ToolTip="Inserts guardian rank data into all of your saves in a folder" />
-                            <Button Content="Backup All Saves" HorizontalAlignment="Left" Margin="20,98,0,0"
-                                    VerticalAlignment="Top" Width="130" RenderTransformOrigin="0.5,0.083"
-                                    ToolTip="Backs up all of your saves into a zip file for easier backing up" />
                         </Grid>
                     </Expander>
                 </Grid>
@@ -547,7 +524,7 @@
 
                     <Grid Name="SerialContentsGrid" Margin="275,45,0,0" VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch">
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,-10,0,0">
                             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
@@ -565,7 +542,8 @@
                                 <xctk:IntegerUpDown
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
-                                        HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top" />
+                                        HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
+                                        ValueChanged="IntegerUpDown_ValueChanged" />
                                 <ComboBox ItemsSource="{Binding ValidBalances}"
                                         SelectedValue="{Binding SelectedBalance, Mode=TwoWay}" Margin="115,60,104,0"
                                         VerticalAlignment="Top" />
@@ -641,16 +619,18 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <Label Content="Parts" HorizontalContentAlignment="Center"
-                                            HorizontalAlignment="Stretch" Margin="0,10,10,0" VerticalAlignment="Top"
-                                            Height="16" Grid.Column="0" />
-                                    <ScrollViewer Name="PartScrollViewer" HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
+                                    <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
+                                            Margin="0,10,10,0" VerticalAlignment="Top" Height="16"
+                                            Content="{Binding Path=SelectedSerial.Parts.Count}"
+                                            ContentStringFormat="Parts ({0}/63)">
+
+                                    </Label>
+                                    <Grid
                                             Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}"
-                                            Margin="0,31,10,39">
-                                        <Grid VerticalAlignment="Top">
-                                            <ListView Name="PartsListView" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
-                                                    SelectionMode="Single" ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
+                                            VerticalAlignment="Stretch" Margin="0,31,10,39">
+                                            <ListView Name="PartsListView" VerticalAlignment="Top"
+                                                    ScrollViewer.CanContentScroll="False" SelectionMode="Single"
+                                                    ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
                                                     Height="215">
                                                 <ListView.Resources>
                                                     <helpers:CalcConverter x:Key="CalcConverter" />
@@ -666,7 +646,8 @@
                                                                     HorizontalContentAlignment="Left"
                                                                     SelectedValue="{Binding Path=., Mode=TwoWay}"
                                                                     ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidParts}"
-                                                                    DropDownOpened="ComboBox_DropDownChanged" DropDownClosed="ComboBox_DropDownChanged">
+                                                                    DropDownOpened="ComboBox_DropDownChanged"
+                                                                    DropDownClosed="ComboBox_DropDownChanged">
                                                                 <ComboBox.ItemsPanel>
                                                                     <ItemsPanelTemplate>
                                                                         <VirtualizingStackPanel
@@ -681,20 +662,20 @@
                                                 </ListView.ItemTemplate>
                                             </ListView>
                                         </Grid>
-                                    </ScrollViewer>
 
-                                    <Button Content="Delete" HorizontalAlignment="Left" Margin="177,0,0,10"
-                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="0" Click="DeleteItemPartBtn_Click"/>
-                                    <Button Content="Add" HorizontalAlignment="Right" Margin="0,0,194,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="0" Click="AddItemPartBtn_Click" />
-
-                                    <ScrollViewer Name="GenericPartScrollViewer" HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}"
-                                            Margin="10,31,0,39" Grid.Column="1">
-                                        <Grid VerticalAlignment="Top">
-                                            <ListView
-                                                    Name="GenericPartsListView" DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
+                                    <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Left" Margin="177,0,0,10"
+                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="0"
+                                            Click="DeleteItemPartBtn_Click" />
+                                    <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right" Margin="0,0,194,10"
+                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="0"
+                                            Click="AddItemPartBtn_Click" />
+                                    
+                                    <Grid Margin="10,31,0,39" Grid.Column="1" HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}">
+                                            <ListView Name="GenericPartsListView"
+                                                    DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}"
+                                                    VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
                                                     SelectionMode="Single"
                                                     ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}"
                                                     Height="215">
@@ -728,15 +709,17 @@
                                                 </ListView.ItemTemplate>
                                             </ListView>
                                         </Grid>
-                                    </ScrollViewer>
 
-                                    <Button Content="Delete" HorizontalAlignment="Left" Margin="177,0,0,10"
-                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="1" />
-                                    <Button Content="Add" HorizontalAlignment="Right" Margin="0,0,184,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="1"/>
-                                    <Label Content="Generic Parts" HorizontalContentAlignment="Center"
-                                            HorizontalAlignment="Stretch" Margin="10,13,2,0" VerticalAlignment="Top"
-                                            Grid.Column="1" Height="16" />
+                                    <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Left" Margin="177,0,0,10"
+                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="1"
+                                            Click="DeleteItemPartBtn_Click" />
+                                    <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right" Margin="0,0,184,10"
+                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="1"
+                                            Click="AddItemPartBtn_Click" />
+                                    <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
+                                            Margin="10,10,0,0" VerticalAlignment="Top" Height="16" Grid.Column="1"
+                                            Content="{Binding Path=SelectedSerial.GenericParts.Count}"
+                                            ContentStringFormat="Parts ({0}/15)" />
 
                                 </Grid>
 
@@ -804,7 +787,7 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Expander IsExpanded="True" Header="Customizations" Margin="0,10,10,271" HorizontalAlignment="Right"
+                    <Expander IsExpanded="True" Header="Customizations" Margin="0,10,10,388" HorizontalAlignment="Right"
                             Width="409">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0">
                             <Button Content="Unlock Room Decorations" Margin="0,0,244,55" HorizontalAlignment="Right"
@@ -851,20 +834,21 @@
                             ToolTip="Amount of Lost Loot SDUs on your profile" Width="254" />
                     <Label FontWeight="Normal" Content="Citizen Science Bucks: " HorizontalAlignment="Right"
                             Margin="0,210,284,0" VerticalAlignment="Top" Width="125" Height="20" />
-                    <xctk:LongUpDown Value="{Binding profile.Profile.CitizenScienceCSBucksAmount, Mode=TwoWay}"
+                    <xctk:IntegerUpDown Value="{Binding profile.Profile.CitizenScienceCSBucksAmount, Mode=TwoWay}"
                             HorizontalAlignment="Right" Margin="0,210,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
                     <Label FontWeight="Normal" Content="Golden Keys: " HorizontalAlignment="Right" Margin="0,235,284,0"
                             VerticalAlignment="Top" Width="125" Height="20" />
-                    <xctk:LongUpDown Value="{Binding profile.Profile, Mode=TwoWay}" HorizontalAlignment="Right"
-                            Margin="0,235,10,0" VerticalAlignment="Top"
+                    <xctk:IntegerUpDown
+                            Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource KeyToIntegerConverter1}, ConverterParameter=GoldenKeys}"
+                            HorizontalAlignment="Right" Margin="0,235,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
                     <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,320,304,0" Width="105"
-                            Height="24" VerticalAlignment="Top" />
+                            Height="24" VerticalAlignment="Top" Name="ClearLLBtn" Click="ClearLLBtn_Click" />
                     <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,320,159,0" Width="105"
-                            Height="24" VerticalAlignment="Top" />
+                            Height="24" VerticalAlignment="Top" Name="ClearBankBtn" Click="ClearBankBtn_Click" />
                     <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,320,10,0" Width="125"
-                            Height="24" VerticalAlignment="Top" />
+                            Height="24" VerticalAlignment="Top" Click="InjectGRBtn_Click" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">
@@ -878,23 +862,36 @@
                 </TabItem.Header>
                 <Grid Margin="0,0,-6,-5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Margin="0,0,6,5"><Run Text="Developed by " /><Hyperlink NavigateUri="http://fdh.one"
+                                TextDecorations="Underline" Foreground="{StaticResource fdh}"><Run Text="FromDarkHell" /></Hyperlink><LineBreak /><Run
+                                Text="Thanks to: " /><LineBreak /><Run Text="- Gibbed, apocalyptech, and others" /></TextBlock>
+
+                    <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="124"
+                            VerticalAlignment="Bottom" Width="170" IsExpanded="True" Margin="0,0,0,10">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="99">
+                            <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Center"
+                                    TextAlignment="Center" Width="170" Margin="0,0,0,64"><Run
+                                        Text="This edits all saves at once." /><LineBreak /><Run
+                                        Text="Please make backups." /></TextBlock>
+                            <Button Name="AdjustSaveLevelsBtn" Content="Adjust Save Levels" HorizontalAlignment="Left"
+                                    Margin="20,69,0,0" VerticalAlignment="Top" Width="130"
+                                    ToolTip="Adjusts the gear and save levels of all of the saves in a folder."
+                                    Click="AdjustSaveLevelsBtn_Click" />
+                            <Button Content="Backup All Saves" Name="BackupAllSavesBtn" HorizontalAlignment="Left"
+                                    Margin="20,40,0,0" VerticalAlignment="Top" Width="130"
+                                    RenderTransformOrigin="0.5,0.083"
+                                    ToolTip="Backs up all of your saves into a zip file for easier backing up"
+                                    Click="BackupAllSavesBtn_Click" />
+                        </Grid>
+                    </Expander>
+
+
+                    <TextBlock HorizontalAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Bottom"
                             Margin="0,0,6,5">
-                        <Run Text="Developed by " /><Hyperlink NavigateUri="http://fdh.one" TextDecorations="Underline"
-                                Foreground="{StaticResource fdh}"><Run Text="FromDarkHell" /></Hyperlink>
-                        <LineBreak />
-                        <Run Text="Thanks to: " />
-                        <LineBreak />
-                        
-                        <Run Text="- Gibbed, apocalyptech, and others" />
-                    </TextBlock>
-
-
-
-                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom">
                         <Run Foreground="MediumPurple" Text="In memory of Baysix. Fly high." />
                     </TextBlock>
                     <CheckBox Name="DarkModeBox" Content="Enable Dark Mode" HorizontalAlignment="Right"
-                            Margin="0,0,10,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938"
+                            Margin="0,1,10,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938"
                             IsChecked="True" Height="20" Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked" />
                 </Grid>
             </TabItem>

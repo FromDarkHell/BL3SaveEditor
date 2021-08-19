@@ -39,9 +39,19 @@ namespace BL3Tools.GameData.Items {
         /// Do note that this isn't an enforced requirement for items; They can use any InventoryData that they'd like to.
         /// </summary>
         public static Dictionary<string, string> BalanceToData { get; private set; } = null;
+        /// <summary>
+        /// A <c>JObject</c> representing the valid part database (excluders/dependencies) as loaded from JSON
+        /// </summary>
+        public static JObject ValidPartDatabase { get; private set; } = null;
+        /// <summary>
+        /// A dictionary mapping a part to it's dependencies / excluders (key in second dictionary)
+        /// </summary>
+        public static Dictionary<string, Dictionary<string, List<string>>> PartDatabase { get; private set; } = null;
 
         private static readonly string embeddedDatabasePath = "BL3Tools.GameData.Items.SerialDB.Inventory Serial Number Database.json";
         private static readonly string embeddedInvDataDBPath = "BL3Tools.GameData.Items.Mappings.balance_to_inv_data.json";
+        private static readonly string embeddedPartDBPath = "BL3Tools.GameData.Items.Mappings.valid_part_database.json";
+
 
         static InventorySerialDatabase() {
             Console.WriteLine("Initializing InventorySerialDatabase...");
@@ -60,6 +70,13 @@ namespace BL3Tools.GameData.Items {
                 string result = reader.ReadToEnd();
 
                 LoadInventoryDataDatabase(result);
+            }
+
+            using (Stream stream = me.GetManifestResourceStream(embeddedPartDBPath))
+            using (StreamReader reader = new StreamReader(stream)) {
+                string result = reader.ReadToEnd();
+
+                LoadPartDatabase(result);
             }
         }
 
@@ -221,6 +238,19 @@ namespace BL3Tools.GameData.Items {
             return parts;
         }
 
+        public static List<string> GetValidPartsForParts(string category, List<string> parts, bool bShortName = true) {
+            var allParts = GetPartsForInvKey(category);
+            foreach(string part in parts) {
+                if (!PartDatabase.ContainsKey(part)) continue;
+
+                var dict = PartDatabase[part];
+                var dependencies = dict["Dependencies"];
+                var excluders = dict["Excluders"];
+                allParts.RemoveAll(x => excluders.Contains(x));
+            }
+            return allParts;
+        }
+
         /// <summary>
         /// Replace the inventory serial database info with the one specified in this specific string
         /// </summary>
@@ -264,7 +294,6 @@ namespace BL3Tools.GameData.Items {
         /// <param name="JSONString">A JSON string representing the InventoryData DB</param>
         /// <returns>Whether or not the loading succeeded</returns>
         public static bool LoadInventoryDataDatabase(string JSONString) {
-
             var originalDB = InventoryDataDatabase;
             try {
                 InventoryDataDatabase = JObject.FromObject(JsonConvert.DeserializeObject(JSONString));
@@ -279,6 +308,37 @@ namespace BL3Tools.GameData.Items {
                 InventoryDataDatabase = originalDB;
             }
 
+            return false;
+        }
+        
+        /// <summary>
+        /// Replace the loaded valid part data database info with the one specified in the JSON string
+        /// </summary>
+        /// <param name="JSONString">A JSON string representing the valid part database</param>
+        /// <returns>Whether or not the loading succeeded</returns>
+        public static bool LoadPartDatabase(string JSONString) {
+            var originalDB = ValidPartDatabase;
+            try {
+                ValidPartDatabase = JObject.FromObject(JsonConvert.DeserializeObject(JSONString));
+                PartDatabase = new Dictionary<string, Dictionary<string, List<string>>>();
+                foreach (JProperty token in ValidPartDatabase.Children<JProperty>()) {
+                    string part = token.Name;
+                    JObject value = token.Value as JObject;
+                    var dependencies = (value["Dependencies"] as JArray).ToObject<List<string>>();
+                    var excluders = (value["Excluders"] as JArray).ToObject<List<string>>();
+                    PartDatabase.Add(part, new Dictionary<string, List<string>>() {
+                        { "Dependencies", dependencies },
+                        { "Excluders", excluders }
+                    });
+                }
+                return true;
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+
+                ValidPartDatabase = originalDB;
+            }
             return false;
         }
     }

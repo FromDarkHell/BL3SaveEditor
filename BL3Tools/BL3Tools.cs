@@ -34,6 +34,13 @@ namespace BL3Tools {
         }
 
         public static UE3Save LoadFileFromDisk(string filePath, bool bBackup = true) {
+        /// <summary>
+        /// This function writes a <c>UE3Save</c> instance to the drive, deserializes it to the respective classes of <c>BL3Profile</c> or <c>BL3Save</c>
+        /// </summary>
+        /// <param name="filePath">A file path for which to load the file from</param>
+        /// <param name="bBackup">Whether or not to backup the save on reading (Default: False)</param>
+        /// <returns>An instance of the respective type, all subclassed by a <c>UE3Save</c> instance</returns>
+        public static UE3Save LoadFileFromDisk(string filePath, bool bBackup = false) {
             UE3Save saveGame = null;
             Console.WriteLine("Reading new file: \"{0}\"", filePath);
             FileStream fs = new FileStream(filePath, FileMode.Open);
@@ -86,36 +93,52 @@ namespace BL3Tools {
             return saveGame;
         }
     
-        public static bool WriteFileToDisk(UE3Save saveGame) {
-            return WriteFileToDisk(saveGame.filePath, saveGame);
+        /// <summary>
+        /// Writes a <c>UE3Save</c> instance to disk, serializing it to the respective protobuf type.
+        /// </summary>
+        /// <param name="saveGame">An instance of a UE3Save for which to write out</param>
+        /// <param name="bBackup">Whether or not to backup on writing (Default: True)</param>
+        /// <returns>Whether or not the file writing succeeded</returns>
+        public static bool WriteFileToDisk(UE3Save saveGame, bool bBackup = true) {
+            return WriteFileToDisk(saveGame.filePath, saveGame, bBackup);
         }
 
-        public static bool WriteFileToDisk(string filePath, UE3Save ue3Save) {
+        /// <summary>
+        /// Writes a <c>UE3Save</c> instance to disk, serializing it to the respective protobuf type.
+        /// </summary>
+        /// <param name="filePath">Filepath for which to write the <paramref name="saveGame"/> out to</param>
+        /// <param name="saveGame">An instance of a UE3Save for which to write out</param>
+        /// <param name="bBackup">Whether or not to backup on writing (Default: True)</param>
+        /// <returns>Whether or not the file writing succeeded</returns>
+
+        public static bool WriteFileToDisk(string filePath, UE3Save saveGame, bool bBackup = true) {
             Console.WriteLine("Writing file to disk...");
             FileStream fs = new FileStream(filePath, FileMode.Create);
             IOWrapper io = new IOWrapper(fs, Endian.Little, 0x0000000);
             try {
-                Helpers.WriteGVASSave(io, ue3Save.GVASData);
+                Helpers.WriteGVASSave(io, saveGame.GVASData);
                 byte[] result;
 
-                Console.WriteLine("Writing profile of type: {0}", ue3Save.GVASData.sgType);
+                Console.WriteLine("Writing profile of type: {0}", saveGame.GVASData.sgType);
 
                 using (var stream = new MemoryStream()) {
-                    switch (ue3Save.GVASData.sgType) {
+                    switch (saveGame.GVASData.sgType) {
                         case "BP_DefaultOakProfile_C":
                             // This is probably a little bit unsafe and costly but *ehh*?
-                            BL3Profile vx = (BL3Profile)ue3Save;
+                            BL3Profile vx = (BL3Profile)saveGame;
 
                             vx.Profile.BankInventoryLists.Clear();
-                            // Add back all the items onto the bank
                             vx.Profile.BankInventoryLists.AddRange(vx.BankItems.Select(x => x.EncryptSerialToBytes()));
 
-                            Serializer.Serialize<Profile>(stream, vx.Profile);
+                            vx.Profile.LostLootInventoryLists.Clear();
+                            vx.Profile.LostLootInventoryLists.AddRange(vx.LostLootItems.Select(x => x.EncryptSerialToBytes()));
+
+                            Serializer.Serialize(stream, vx.Profile);
                             result = stream.ToArray();
                             ProfileBogoCrypt.Encrypt(result, 0, result.Length);
                             break;
                         case "OakSaveGame":
-                            BL3Save save = (BL3Save)ue3Save;
+                            BL3Save save = (BL3Save)saveGame;
                             // Unlike the profiles, we can't just remove all of the data from the save's inventory and then readd it
                             // Saves store other data in the items as well so we can't do that
                             foreach(Borderlands3Serial serial in save.InventoryItems) {
@@ -139,12 +162,12 @@ namespace BL3Tools {
                             }
 
 
-                            Serializer.Serialize<Character>(stream, save.Character);
+                            Serializer.Serialize(stream, save.Character);
                             result = stream.ToArray();
                             SaveBogoCrypt.Encrypt(result, 0, result.Length);
                             break;
                         default:
-                            throw new BL3Exceptions.InvalidSaveException(ue3Save.GVASData.sgType);
+                            throw new BL3Exceptions.InvalidSaveException(saveGame.GVASData.sgType);
                     }
                 }
 

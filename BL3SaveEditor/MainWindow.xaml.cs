@@ -13,6 +13,8 @@ using System.Collections.ObjectModel;
 using BL3Tools.GameData.Items;
 using MessageBox = AdonisUI.Controls.MessageBox;
 using System.Windows.Input;
+using System.IO.Compression;
+using System.IO;
 
 namespace BL3SaveEditor {
     /// <summary>
@@ -190,16 +192,30 @@ namespace BL3SaveEditor {
         public ListCollectionView ValidParts {
             get {
                 if (SelectedSerial == null) return null;
+                List<string> validParts = new List<string>();
 
-                List<string> validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
-                return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
+                if(!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
+                else {
+                    validParts = InventorySerialDatabase.GetValidPartsForParts(SelectedSerial.InventoryKey, SelectedSerial.Parts, false);
+                }
+                validParts = validParts.Select(x => x.Split('.').Last()).ToList();
+                validParts.Sort();
+                return new ListCollectionView(validParts);
             }
         }
 
         public ListCollectionView ValidGenerics {
             get {
                 if (SelectedSerial == null) return null;
-                List<string> validParts = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
+                List<string> validParts = new List<string>();
+
+
+                // Currently no generic parts actually have any excluders/dependencies
+                // but in the future they might so let's still enforce legit parts on them
+                if (!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
+                else {
+                    validParts = InventorySerialDatabase.GetValidPartsForParts("InventoryGenericPartData", SelectedSerial.GenericParts, false);
+                }
                 return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
             }
         }
@@ -247,7 +263,7 @@ namespace BL3SaveEditor {
         private void OpenSaveBtn_Click(object sender, RoutedEventArgs e) {
             OpenFileDialog fileDialog = new OpenFileDialog {
                 Title = "Select BL3 Save/Profile",
-                Filter = "BL3 Save/Profile|*.sav",
+                Filter = "BL3 Save/Profile (*.sav)|*.sav",
                 InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames")
             };
 
@@ -279,21 +295,29 @@ namespace BL3SaveEditor {
             DataContext = this;
         }
 
-        private void SaveSaveBtn_Click(object sender, RoutedEventArgs e) {
-            Console.WriteLine("Saving save...");
-
+        private void SaveOpenedFile() {
             if (saveGame != null) BL3Tools.BL3Tools.WriteFileToDisk(saveGame);
-            else if (profile != null) BL3Tools.BL3Tools.WriteFileToDisk(profile);
+            else if (profile != null) {
+                BL3Tools.BL3Tools.WriteFileToDisk(profile);
+                DirectoryInfo saveFiles = new DirectoryInfo(Path.GetDirectoryName(profile.filePath));
+                InjectGuardianRank(saveFiles.EnumerateFiles("*.sav").Select(x => x.FullName).ToArray());
+            }
 
+            // Refresh data context for safety
             DataContext = null;
             DataContext = this;
+        }
+
+        private void SaveSaveBtn_Click(object sender, RoutedEventArgs e) {
+            Console.WriteLine("Saving save...");
+            SaveOpenedFile();
         }
 
         private void SaveAsSaveBtn_Click(object sender, RoutedEventArgs e) {
             Console.WriteLine("Saving save as...");
             SaveFileDialog saveFileDialog = new SaveFileDialog() {
                 Title = "Save BL3 Save/Profile",
-                Filter = "BL3 Save/Profile|*.sav",
+                Filter = "BL3 Save/Profile (*.sav)|*.sav",
                 InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames")
             };
 
@@ -303,22 +327,12 @@ namespace BL3SaveEditor {
                 else if (profile != null) profile.filePath = saveFileDialog.FileName;
             }
 
-            if (saveGame != null) BL3Tools.BL3Tools.WriteFileToDisk(saveGame);
-            else if (profile != null) BL3Tools.BL3Tools.WriteFileToDisk(profile);
-
-            // Refresh data context for safety
-            DataContext = null;
-            DataContext = this;
+            SaveOpenedFile();
         }
 
         private void DbgBtn_Click(object sender, RoutedEventArgs e) {
             dbgConsole.Show();
         }
-
-        private void Info_Click(object sender, RoutedEventArgs e) {
-
-        }
-
 
         #endregion
 
@@ -348,10 +362,91 @@ namespace BL3SaveEditor {
         #endregion
 
         #region Interactions
+
+        #region General
         private void RandomizeGUIDBtn_Click(object sender, RoutedEventArgs e) {
             Guid newGUID = Guid.NewGuid();
             GUIDTextBox.Text = newGUID.ToString().Replace("-","").ToUpper();
         }
+
+        private void AdjustSaveLevelsBtn_Click(object sender, RoutedEventArgs e) {
+            OpenFileDialog fileDialog = new OpenFileDialog {
+                Title = "Select BL3 Saves",
+                Filter = "BL3 Save (*.sav)|*.sav",
+                InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames"),
+                Multiselect = true
+            };
+
+            if (fileDialog.ShowDialog() != true) return;
+
+            int level = 0;
+            var msgBox = new Controls.IntegerMessageBox("Enter a level to sync saves to: ", "Level: ", minimumXP, maximumXP, maximumXP);
+            msgBox.Owner = this;
+            msgBox.ShowDialog();
+            if (!msgBox.Succeeded) return;
+            level = msgBox.Result;
+
+            foreach(string file in fileDialog.FileNames) {
+                try {
+                    if (!(BL3Tools.BL3Tools.LoadFileFromDisk(file) is BL3Save save)) {
+                        Console.WriteLine("Read in file from \"{0}\"; Incorrect type: {1}");
+                        continue;
+                    }
+                    save.Character.ExperiencePoints = PlayerXP.GetPointsForXPLevel(level);
+                    BL3Tools.BL3Tools.WriteFileToDisk(save, false);
+                }
+                catch(Exception ex) {
+                    Console.WriteLine("Failed to adjust level of save: \"{0}\"\n{1}", ex.Message, ex.StackTrace);
+                }
+            }
+
+        }
+
+
+        private void BackupAllSavesBtn_Click(object sender, RoutedEventArgs e) {
+            // Ask the user for all the saves to backup
+            OpenFileDialog fileDialog = new OpenFileDialog {
+                Title = "Backup BL3 Saves/Profiles",
+                Filter = "BL3 Save/Profile (*.sav)|*.sav",
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames"),
+                Multiselect = true
+            };
+            if (fileDialog.ShowDialog() != true) return;
+
+            // Ask the user for a zip output
+            SaveFileDialog outDialog = new SaveFileDialog {
+                Title = "Backup Outputs",
+                Filter = "ZIP file|*.zip",
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames"),
+                RestoreDirectory = true,
+            };
+            if (outDialog.ShowDialog() != true) return;
+
+            Mouse.OverrideCursor = Cursors.Wait;
+            try {
+                // Finally back up all of the saves (using a ZIP because meh)
+                using (FileStream ms = new FileStream(outDialog.FileName, FileMode.Create))
+                using (ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create)) {
+                    foreach (string path in fileDialog.FileNames) {
+                        string fileName = Path.GetFileName(path);
+                        ZipArchiveEntry saveEntry = archive.CreateEntry(fileName, CompressionLevel.Optimal);
+
+                        using (BinaryWriter writer = new BinaryWriter(saveEntry.Open())) {
+                            byte[] data = File.ReadAllBytes(path);
+                            writer.Write(data);
+                        }
+                    }
+                }
+
+                Console.WriteLine("Backed up all saves: {0} to ZIP: {1}", string.Join(",", fileDialog.FileNames), outDialog.FileName);
+            }
+            finally {
+                // Make sure that in the event of an exception, that the mouse cursor gets restored (:
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        #endregion
 
         #region Fast Travel
         private void DbgMapBox_StateChange(object sender, RoutedEventArgs e) {
@@ -417,7 +512,10 @@ namespace BL3SaveEditor {
             grid.DataContext = null;
             grid.DataContext = this;
         }
-
+        private void IntegerUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
+            if (e.NewValue == null || e.OldValue == null) return;
+            RefreshBackpackView();
+        }
         private void BackpackListView_Selected(object sender, EventArgs e) {
             if (BackpackListView.Items.Count <= 1 || BackpackListView.SelectedValue == null) return;
             ListView listView = (sender as ListView);
@@ -442,7 +540,6 @@ namespace BL3SaveEditor {
             // Make sure no other elements can handle the events
             e.Handled = true;
         }
-
         private void NewItemBtn_Click(object sender, RoutedEventArgs e) {
             Controls.ItemBalanceChanger changer = new Controls.ItemBalanceChanger() { Owner = this };
             changer.ShowDialog();
@@ -554,21 +651,44 @@ namespace BL3SaveEditor {
         }
         private void AddItemPartBtn_Click(object sender, RoutedEventArgs e) {
             if (SelectedSerial == null) return;
+
+
+            var btn = (Button)sender;
+            ListView obj = ((ListView)FindName(btn.Name.Replace("AddBtn", "") + "ListView"));
+
+
+            string propertyName = obj.Name.Split(new string[] { "ListView" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if (propertyName == default) return;
+
+            List<string> parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
+
+            parts.Add(InventorySerialDatabase.GetPartFromShortName(
+                (propertyName == "Parts" ? SelectedSerial.InventoryKey : "InventoryGenericPartData"),
+                (propertyName == "Parts" ? ValidParts : ValidGenerics).SourceCollection.Cast<string>().FirstOrDefault())
+            );
+
             // Update the valid parts
             ValidParts.Refresh();
+            ValidGenerics.Refresh();
 
-            SelectedSerial.Parts.Add(ValidParts.SourceCollection.Cast<string>().FirstOrDefault());
-            ListView obj = ((ListView)FindName("PartsListView"));
             obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
         }
         private void DeleteItemPartBtn_Click(object sender, RoutedEventArgs e) {
-            ListView obj = ((ListView)FindName("PartsListView"));
+            var btn = (Button)sender;
+            ListView obj = ((ListView)FindName(btn.Name.Replace("DelBtn", "") + "ListView"));
 
-            if (obj.SelectedIndex != -1) 
-                SelectedSerial.Parts.RemoveAt(obj.SelectedIndex);
+            string propertyName = obj.Name.Split(new string[] { "ListView" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if (propertyName == default) return;
+
+            List<string> parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
+
+            if (obj.SelectedIndex != -1)
+                parts.RemoveAt(obj.SelectedIndex);
             
             // Update the valid parts
             ValidParts.Refresh();
+            ValidGenerics.Refresh();
+
             obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
         }
 
@@ -579,11 +699,12 @@ namespace BL3SaveEditor {
 
             parent.SelectedValue = box.SelectedValue;
         }
-
         private string GetSelectedPart(string type, object sender, SelectionChangedEventArgs e) {
             if (e.Handled || e.RemovedItems.Count < 1) return null;
             ComboBox box = ((ComboBox)sender);
 
+            // Get the last changed part and the new part
+            // Old part is useful so that way we don't end up doing weird index updating shenanigans when the combobox updates
             var newPart = e.AddedItems.Cast<string>().FirstOrDefault();
             var oldPart = e.RemovedItems.Cast<string>().FirstOrDefault();
             if (newPart == default || oldPart == default) return null;
@@ -598,7 +719,6 @@ namespace BL3SaveEditor {
 
             return fullName;
         }
-
         private void ItemPart_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ListView parent = ((ComboBox)sender).FindParent<ListView>();
             string propertyName = parent.Name.Split(new string[] { "ListView" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
@@ -607,8 +727,74 @@ namespace BL3SaveEditor {
             string fullName = GetSelectedPart(propertyName, sender, e);
             if (fullName == null) return;
 
-            List<string>  parts = (List<string>)SelectedSerial.GetType().GetProperty((string)propertyName).GetValue(SelectedSerial, null);
+            // Do some weird jank in order to get the list of the value we've changed, so that way we can set the index
+            List<string>  parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
+            // The selected index stays updated with the current combobox because of "ComboBox_DropDownChanged".
             parts[parent.SelectedIndex] = fullName;
+        }
+        #endregion
+
+        #region Profile
+        private void InjectGuardianRank(string[] files) {
+            foreach (string file in files) {
+                try {
+                    if (!(BL3Tools.BL3Tools.LoadFileFromDisk(file) is BL3Save save)) {
+                        Console.WriteLine("Reading in file from \"{0}\"; Incorrect type: {1}");
+                        continue;
+                    }
+                    var grcd = save.Character.GuardianRankCharacterData;
+                    grcd.GuardianAvailableTokens = profile.Profile.GuardianRank.AvailableTokens;
+                    grcd.GuardianExperience = profile.Profile.GuardianRank.GuardianExperience;
+                    grcd.NewGuardianExperience = profile.Profile.GuardianRank.NewGuardianExperience;
+                    grcd.GuardianRewardRandomSeed = profile.Profile.GuardianRank.GuardianRewardRandomSeed;
+                    List<OakSave.GuardianRankRewardCharacterSaveGameData> zeroedGRRanks = new List<OakSave.GuardianRankRewardCharacterSaveGameData>();
+                    foreach (var grData in grcd.RankRewards) {
+                        bool bFoundMatch = false;
+                        foreach (var pGRData in profile.Profile.GuardianRank.RankRewards) {
+                            if (pGRData.RewardDataPath.Equals(grData.RewardDataPath)) {
+                                grData.NumTokens = pGRData.NumTokens;
+                                if (grData.NumTokens == 0)
+                                    zeroedGRRanks.Add(grData);
+                                bFoundMatch = true;
+                            }
+                        }
+
+                        if (!bFoundMatch) zeroedGRRanks.Add(grData);
+                    }
+                    zeroedGRRanks = zeroedGRRanks.Distinct().ToList();
+
+                    // In order to properly save zero-ed or missing GR ranks, we've got to remove them from the list (:
+                    grcd.RankRewards.RemoveAll(x => zeroedGRRanks.Contains(x));
+
+                    BL3Tools.BL3Tools.WriteFileToDisk(save, false);
+                }
+                catch (Exception ex) {
+                    Console.WriteLine("Failed to inject guardian rank into save: \"{0}\"\n{1}", ex.Message, ex.StackTrace);
+                }
+                finally {
+                    Console.WriteLine("Completed injecting guardian rank into saves...");
+                }
+            }
+        }
+        private void InjectGRBtn_Click(object sender, RoutedEventArgs e) {
+            // Ask the user for all the saves to inject into
+            OpenFileDialog fileDialog = new OpenFileDialog {
+                Title = "Select saves to inject into",
+                Filter = "BL3 Save/Profile (*.sav)|*.sav",
+                InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames"),
+                Multiselect = true
+            };
+            if (fileDialog.ShowDialog() != true) return;
+
+            InjectGuardianRank(fileDialog.FileNames);
+        }
+        private void ClearLLBtn_Click(object sender, RoutedEventArgs e) {
+            if (profile == null) return;
+            profile.LostLootItems.Clear();
+        }
+        private void ClearBankBtn_Click(object sender, RoutedEventArgs e) {
+            if (profile == null) return;
+            profile.BankItems.Clear();
         }
 
         #endregion

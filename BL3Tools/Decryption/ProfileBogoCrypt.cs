@@ -23,6 +23,8 @@
 using System;
 
 namespace BL3Tools.Decryption {
+    // TODO: Implement some form of cross-platform compatability here... :/
+
     internal static class ProfileBogoCrypt {
         private static readonly byte[] _PrefixMagic;
         private static readonly byte[] _XorMagic;
