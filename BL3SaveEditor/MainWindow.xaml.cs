@@ -12,9 +12,13 @@ using BL3SaveEditor.Helpers;
 using System.Collections.ObjectModel;
 using BL3Tools.GameData.Items;
 using MessageBox = AdonisUI.Controls.MessageBox;
+using MessageBoxResult = AdonisUI.Controls.MessageBoxResult;
+using MessageBoxButton = AdonisUI.Controls.MessageBoxButton;
+using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Windows.Input;
 using System.IO.Compression;
 using System.IO;
+using AutoUpdaterDotNET;
 
 namespace BL3SaveEditor {
     /// <summary>
@@ -252,7 +256,11 @@ namespace BL3SaveEditor {
 
             dbgConsole = new Debug.DebugConsole();
 
-            ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count-1;
+            ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
+            AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
+
+            // AutoUpdater.Start("https://github.com/FromDarkHell/BL3SaveEditor/blob/main/BL3SaveEditor/MainWindow.xaml");
+            AutoUpdater.Start("http://localhost:8000/AutoUpdater.xml");
         }
 
         #region Toolbar Interaction
@@ -801,6 +809,37 @@ namespace BL3SaveEditor {
 
         #endregion
 
+        private void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args) {
+            if(args.Error == null) {
+                if(args.IsUpdateAvailable) {
+                    MessageBoxResult result;
+                    if(args.Mandatory.Value) {
+                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. This update is required. Press OK to begin updating.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else {
+                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. You're using version {args.InstalledVersion}. Do you want to update now?", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                    }
 
+                    if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
+                        try {
+                            if (AutoUpdater.DownloadUpdate(args)) {
+                                Application.Current.Shutdown();
+                            }
+                        }
+                        catch (Exception exception) {
+                            MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
+            }
+            else {
+                if (args.Error is System.Net.WebException) {
+                    MessageBox.Show("There is a problem reaching update server. Please check your internet connection and try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else {
+                    MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }

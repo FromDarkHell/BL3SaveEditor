@@ -33,7 +33,6 @@ namespace BL3Tools {
             }
         }
 
-        public static UE3Save LoadFileFromDisk(string filePath, bool bBackup = true) {
         /// <summary>
         /// This function writes a <c>UE3Save</c> instance to the drive, deserializes it to the respective classes of <c>BL3Profile</c> or <c>BL3Save</c>
         /// </summary>
