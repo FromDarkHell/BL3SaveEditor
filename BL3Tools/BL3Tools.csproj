@@ -1,45 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props" Condition="Exists('..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EEFEAB45-B558-4D33-9C74-D68660E26921}</ProjectGuid>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BL3Tools</RootNamespace>
-    <AssemblyName>BL3Tools</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <LangVersion>8.0</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>8.0</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>
@@ -49,94 +17,22 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationFramework" />
-    <Reference Include="protobuf-net, Version=3.0.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\packages\protobuf-net.3.0.101\lib\net461\protobuf-net.dll</HintPath>
-    </Reference>
-    <Reference Include="protobuf-net.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\packages\protobuf-net.Core.3.0.101\lib\net461\protobuf-net.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BL3Tools.cs" />
-    <Compile Include="Decryption\CRC32.cs" />
-    <Compile Include="Decryption\ProfileBogoCrypt.cs" />
-    <Compile Include="Decryption\ProfileBogoCrypt.cs" />
-    <Compile Include="Decryption\SaveBogoCrypt.cs" />
-    <Compile Include="GameData\DataPathTranslations.cs" />
-    <Compile Include="GameData\Experience.cs" />
-    <Compile Include="GameData\Experience.cs" />
-    <Compile Include="GameData\Items\InventoryKeyDB.cs" />
-    <Compile Include="GameData\Items\InventoryNameDatabase.cs" />
-    <Compile Include="GameData\Items\InventoryNameDatabase.cs" />
-    <Compile Include="GameData\Items\InventorySerialDatabase.cs" />
-    <Compile Include="GameData\Items\Borderlands3Serial.cs" />
-    <Compile Include="GameData\SDU.cs" />
-    <Compile Include="GameData\SDU.cs" />
-    <Compile Include="GVAS\GVASSave.cs" />
-    <Compile Include="Helpers\Helpers.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Save.cs" />
-    <Compile Include="Save.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FixProtobufs.ps1" />
     <EmbeddedResource Include="GameData\Items\SerialDB\Inventory Serial Number Database.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_key.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\part_name_mapping.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\prefix_name_mapping.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_data.json" />
-    <None Include="GameData\Items\Mappings\README.md" />
     <EmbeddedResource Include="GameData\Items\Mappings\valid_part_database.json" />
-    <None Include="GameData\Items\SerialDB\README.md" />
     <EmbeddedResource Include="GameData\Mappings\fast_travel_to_name.json" />
-    <None Include="packages.config" />
     <AdditionalFiles Include="Protobufs\OakShared.proto" />
     <AdditionalFiles Include="Protobufs\OakProfile.proto" />
     <AdditionalFiles Include="Protobufs\OakSave.proto" />
-    <None Include="Protobufs\OakSave.proto" />
-    <None Include="Scripts\README.md" />
     <Protobuf Include="Protobufs/OakShared.proto" Link="OakShared.proto" />
     <Protobuf Include="Protobufs/OakProfile.proto" Link="OakProfile.proto" />
     <Protobuf Include="Protobufs/OakSave.proto" Link="OakSave.proto" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IOTools\IOTools.csproj">
-      <Project>{b93ff5db-ffef-4f81-812e-f5fdf8cdfbbe}</Project>
-      <Name>IOTools</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\IOTools\IOTools.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\BalanceToInventoryData.py" />
@@ -145,16 +41,17 @@
     <Content Include="Scripts\PartToName.py" />
     <Content Include="Scripts\ValidPartMapper.py" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props'))" />
-    <Error Condition="!Exists('..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.targets'))" />
-  </Target>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="protobuf-net" Version="3.0.101" />
+    <PackageReference Include="protobuf-net.MSBuild" Version="3.0.101" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.2.241603">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.targets" Condition="Exists('..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.targets')" />
-  <PropertyGroup>
-    <PreBuildEvent>powershell -executionpolicy bypass -File "$(ProjectDir)FixProtobufs.ps1"</PreBuildEvent>
-  </PropertyGroup>
+  <PropertyGroup />
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell -executionpolicy bypass -File &quot;$(ProjectDir)FixProtobufs.ps1&quot;" />
+  </Target>
 </Project>

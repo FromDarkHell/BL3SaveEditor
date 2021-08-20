@@ -1,6 +1,6 @@
-Write-Host "Fixing protobuf...";
+Write-Host ("Fixing protobufs for: " + (Get-Location));
 
-Get-ChildItem "../../obj/" -Recurse -Filter *.cs | 
+Get-ChildItem "./obj" -Recurse -Filter *.cs | 
 Foreach-Object {
 	$fileName = $_.FullName
 	if($fileName -Match "Protobufs") {

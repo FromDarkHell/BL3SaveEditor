@@ -259,11 +259,17 @@ namespace BL3SaveEditor {
             dbgConsole = new Debug.DebugConsole();
 
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
-            AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
+            
+            #pragma warning disable CA1416 // Validate platform compatibility
+            if (OperatingSystem.IsWindows()) {
+                AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
+                #if !DEBUG
+                AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
+                #endif
+            }
+            #pragma warning restore CA1416 // Validate platform compatibility
 
-            #if !DEBUG
-            AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
-            #endif
+
         }
 
         #region Toolbar Interaction
@@ -818,39 +824,43 @@ namespace BL3SaveEditor {
 
         #endregion
 
+        #region Auto Updating
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", 
+            Justification = "AutoUpdater.NET seems to not support non-Windows and so we don't")]
         private void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args) {
-            if(args.Error == null) {
-                if(args.IsUpdateAvailable) {
-                    MessageBoxResult result;
-                    if(args.Mandatory.Value) {
-                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. This update is required. Press OK to begin updating.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else {
-                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. You're using version {args.InstalledVersion}. Do you want to update now?", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
-                    }
+            if(OperatingSystem.IsWindows()) {
+                if (args.Error == null) {
+                    if (args.IsUpdateAvailable) {
+                        MessageBoxResult result;
+                        if (args.Mandatory.Value) {
+                            result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. This update is required. Press OK to begin updating.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else {
+                            result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. You're using version {args.InstalledVersion}. Do you want to update now?", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                        }
 
-                    if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
-                        try {
-                            if (AutoUpdater.DownloadUpdate(args)) {
-                                Application.Current.Shutdown();
+                        if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
+                            try {
+                                if (AutoUpdater.DownloadUpdate(args)) {
+                                    Application.Current.Shutdown();
+                                }
+                            }
+                            catch (Exception exception) {
+                                MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
-                        catch (Exception exception) {
-                            MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
                     }
                 }
-            }
-            else {
-                if (args.Error is System.Net.WebException) {
-                    MessageBox.Show("There is a problem reaching update server. Please check your internet connection and try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
                 else {
-                    MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (args.Error is System.Net.WebException) {
+                        MessageBox.Show("There is a problem reaching update server. Please check your internet connection and try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    else {
+                        MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
         }
-
-
+        #endregion
     }
 }
