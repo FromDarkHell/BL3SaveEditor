@@ -19,6 +19,8 @@ using System.Windows.Input;
 using System.IO.Compression;
 using System.IO;
 using AutoUpdaterDotNET;
+using System.Windows.Navigation;
+using System.Diagnostics;
 
 namespace BL3SaveEditor {
     /// <summary>
@@ -259,8 +261,9 @@ namespace BL3SaveEditor {
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
 
-            // AutoUpdater.Start("https://github.com/FromDarkHell/BL3SaveEditor/blob/main/BL3SaveEditor/MainWindow.xaml");
-            AutoUpdater.Start("http://localhost:8000/AutoUpdater.xml");
+            #if !DEBUG
+            AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
+            #endif
         }
 
         #region Toolbar Interaction
@@ -534,7 +537,6 @@ namespace BL3SaveEditor {
             listView.ScrollIntoView(listView.SelectedItem);
 
             RefreshBackpackView();
-
         }
         private void BackpackListView_MouseWheel(object sender, MouseWheelEventArgs e) {
             if (e.Handled) return;
@@ -807,6 +809,13 @@ namespace BL3SaveEditor {
 
         #endregion
 
+        #region About
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e) {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+        }
+        #endregion
+
         #endregion
 
         private void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args) {
@@ -841,5 +850,7 @@ namespace BL3SaveEditor {
                 }
             }
         }
+
+
     }
 }

@@ -161,7 +161,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <Expander IsExpanded="True" Header="Character" HorizontalAlignment="Stretch" Margin="10,10,377,232"
+                    <Expander IsExpanded="True" Header="Character" HorizontalAlignment="Left" Margin="10,10,377,312"
                             VerticalAlignment="Stretch">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <Label FontWeight="Normal" Content="Class: " Margin="10,11,0,0"
@@ -628,94 +628,94 @@
                                     <Grid
                                             Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}"
                                             VerticalAlignment="Stretch" Margin="0,31,10,39">
-                                            <ListView Name="PartsListView" VerticalAlignment="Top"
-                                                    ScrollViewer.CanContentScroll="False" SelectionMode="Single"
-                                                    ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
-                                                    Height="215">
-                                                <ListView.Resources>
-                                                    <helpers:CalcConverter x:Key="CalcConverter" />
-                                                </ListView.Resources>
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <VirtualizingStackPanel Orientation="Horizontal">
-                                                            <ComboBox
-                                                                    Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Path=ActualWidth, Converter={StaticResource CalcConverter}, ConverterParameter=Minus;25, Mode=OneWay}"
-                                                                    VerticalAlignment="Top"
-                                                                    VerticalContentAlignment="Center"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    HorizontalContentAlignment="Left"
-                                                                    SelectedValue="{Binding Path=., Mode=TwoWay}"
-                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidParts}"
-                                                                    DropDownOpened="ComboBox_DropDownChanged"
-                                                                    DropDownClosed="ComboBox_DropDownChanged">
-                                                                <ComboBox.ItemsPanel>
-                                                                    <ItemsPanelTemplate>
-                                                                        <VirtualizingStackPanel
-                                                                                VirtualizingStackPanel.IsVirtualizing="True"
-                                                                                VirtualizingStackPanel.VirtualizationMode="Standard"
-                                                                                MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}" />
-                                                                    </ItemsPanelTemplate>
-                                                                </ComboBox.ItemsPanel>
-                                                            </ComboBox>
-                                                        </VirtualizingStackPanel>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                        </Grid>
+                                        <ListView Name="PartsListView" VerticalAlignment="Top"
+                                                ScrollViewer.CanContentScroll="False" SelectionMode="Single"
+                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
+                                                Height="215">
+                                            <ListView.Resources>
+                                                <helpers:CalcConverter x:Key="CalcConverter" />
+                                            </ListView.Resources>
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <VirtualizingStackPanel Orientation="Horizontal">
+                                                        <ComboBox
+                                                                Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Path=ActualWidth, Converter={StaticResource CalcConverter}, ConverterParameter=Minus;25, Mode=OneWay}"
+                                                                VerticalAlignment="Top"
+                                                                VerticalContentAlignment="Center"
+                                                                HorizontalAlignment="Stretch"
+                                                                HorizontalContentAlignment="Left"
+                                                                SelectedValue="{Binding Path=., Mode=TwoWay}"
+                                                                ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidParts}"
+                                                                DropDownOpened="ComboBox_DropDownChanged"
+                                                                DropDownClosed="ComboBox_DropDownChanged">
+                                                            <ComboBox.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <VirtualizingStackPanel
+                                                                            VirtualizingStackPanel.IsVirtualizing="True"
+                                                                            VirtualizingStackPanel.VirtualizationMode="Standard"
+                                                                            MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}" />
+                                                                </ItemsPanelTemplate>
+                                                            </ComboBox.ItemsPanel>
+                                                        </ComboBox>
+                                                    </VirtualizingStackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Grid>
 
-                                    <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Left" Margin="177,0,0,10"
-                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="0"
-                                            Click="DeleteItemPartBtn_Click" />
-                                    <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right" Margin="0,0,194,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="0"
-                                            Click="AddItemPartBtn_Click" />
-                                    
+                                    <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Left"
+                                            Margin="177,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
+                                            Grid.Column="0" Click="DeleteItemPartBtn_Click" />
+                                    <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right"
+                                            Margin="0,0,194,10" VerticalAlignment="Bottom" Width="68" Height="24"
+                                            Grid.Column="0" Click="AddItemPartBtn_Click" />
+
                                     <Grid Margin="10,31,0,39" Grid.Column="1" HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}">
-                                            <ListView Name="GenericPartsListView"
-                                                    DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}"
-                                                    VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
-                                                    SelectionMode="Single"
-                                                    ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}"
-                                                    Height="215">
-                                                <ListView.Resources>
-                                                    <helpers:CalcConverter x:Key="CalcConverter" />
-                                                </ListView.Resources>
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <VirtualizingStackPanel Orientation="Horizontal">
-                                                            <ComboBox
-                                                                    Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Path=ActualWidth, Converter={StaticResource CalcConverter}, ConverterParameter=Minus;25, Mode=OneWay}"
-                                                                    VerticalAlignment="Top"
-                                                                    VerticalContentAlignment="Center"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    HorizontalContentAlignment="Left"
-                                                                    SelectedValue="{Binding Path=.}"
-                                                                    ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidGenerics}"
-                                                                    DropDownOpened="ComboBox_DropDownChanged"
-                                                                    DropDownClosed="ComboBox_DropDownChanged">
-                                                                <ComboBox.ItemsPanel>
-                                                                    <ItemsPanelTemplate>
-                                                                        <VirtualizingStackPanel
-                                                                                VirtualizingStackPanel.IsVirtualizing="True"
-                                                                                VirtualizingStackPanel.VirtualizationMode="Standard"
-                                                                                MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}" />
-                                                                    </ItemsPanelTemplate>
-                                                                </ComboBox.ItemsPanel>
-                                                            </ComboBox>
-                                                        </VirtualizingStackPanel>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                        </Grid>
+                                            VerticalAlignment="Stretch"
+                                            Background="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}">
+                                        <ListView Name="GenericPartsListView"
+                                                DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}"
+                                                VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
+                                                SelectionMode="Single"
+                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}"
+                                                Height="215">
+                                            <ListView.Resources>
+                                                <helpers:CalcConverter x:Key="CalcConverter" />
+                                            </ListView.Resources>
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <VirtualizingStackPanel Orientation="Horizontal">
+                                                        <ComboBox
+                                                                Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}, Path=ActualWidth, Converter={StaticResource CalcConverter}, ConverterParameter=Minus;25, Mode=OneWay}"
+                                                                VerticalAlignment="Top"
+                                                                VerticalContentAlignment="Center"
+                                                                HorizontalAlignment="Stretch"
+                                                                HorizontalContentAlignment="Left"
+                                                                SelectedValue="{Binding Path=.}"
+                                                                ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor,  AncestorType={x:Type local:MainWindow}}, Path=ValidGenerics}"
+                                                                DropDownOpened="ComboBox_DropDownChanged"
+                                                                DropDownClosed="ComboBox_DropDownChanged">
+                                                            <ComboBox.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <VirtualizingStackPanel
+                                                                            VirtualizingStackPanel.IsVirtualizing="True"
+                                                                            VirtualizingStackPanel.VirtualizationMode="Standard"
+                                                                            MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ComboBox}}}" />
+                                                                </ItemsPanelTemplate>
+                                                            </ComboBox.ItemsPanel>
+                                                        </ComboBox>
+                                                    </VirtualizingStackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Grid>
 
-                                    <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Left" Margin="177,0,0,10"
-                                            VerticalAlignment="Bottom" Width="75" Height="24" Grid.Column="1"
-                                            Click="DeleteItemPartBtn_Click" />
-                                    <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right" Margin="0,0,184,10"
-                                            VerticalAlignment="Bottom" Width="68" Height="24" Grid.Column="1"
-                                            Click="AddItemPartBtn_Click" />
+                                    <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Left"
+                                            Margin="177,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
+                                            Grid.Column="1" Click="DeleteItemPartBtn_Click" />
+                                    <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right"
+                                            Margin="0,0,184,10" VerticalAlignment="Bottom" Width="68" Height="24"
+                                            Grid.Column="1" Click="AddItemPartBtn_Click" />
                                     <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
                                             Margin="10,10,0,0" VerticalAlignment="Top" Height="16" Grid.Column="1"
                                             Content="{Binding Path=SelectedSerial.GenericParts.Count}"
@@ -862,9 +862,35 @@
                 </TabItem.Header>
                 <Grid Margin="0,0,-6,-5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <TextBlock TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            Margin="0,0,6,5"><Run Text="Developed by " /><Hyperlink NavigateUri="http://fdh.one"
-                                TextDecorations="Underline" Foreground="{StaticResource fdh}"><Run Text="FromDarkHell" /></Hyperlink><LineBreak /><Run
-                                Text="Thanks to: " /><LineBreak /><Run Text="- Gibbed, apocalyptech, and others" /></TextBlock>
+                            Margin="0,0,131,134" FontSize="13">
+                        <Run Text="Developed by" />
+                        <Hyperlink NavigateUri="http://fdh.one" TextDecorations="Underline"
+                                Foreground="{StaticResource fdh}" RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="FromDarkHell" />
+                        </Hyperlink>
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Thanks to: " />
+                        <LineBreak />
+                        <Run
+                                Text="- Gibbed, apocalyptech, raptor/cfi2017, c0dycode, apple1417, LostInCompression, DOMIN8" />
+                        <LineBreak />
+                        <Run Text="Without their help, this program would not exist." />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="Of course, thanks to Gearbox Software for creating this game!" />
+                        <LineBreak />
+                        <Run Text="If you wish to support me financially, you can support me via" />
+                        <Hyperlink NavigateUri="https://ko-fi.com/fromdarkhell"
+                                RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="ko-fi" TextDecorations="Underline" />
+                        </Hyperlink>
+                        <Run Text="or" />
+                        <Hyperlink NavigateUri="https://www.patreon.com/fromdarkhell"
+                                RequestNavigate="Hyperlink_RequestNavigate">
+                            <Run Text="Patreon" TextDecorations="Underline" />
+                        </Hyperlink>
+                    </TextBlock>
 
                     <Expander Header="Batch Processing" HorizontalAlignment="Left" Height="124"
                             VerticalAlignment="Bottom" Width="170" IsExpanded="True" Margin="0,0,0,10">
@@ -890,9 +916,12 @@
                             Margin="0,0,6,5">
                         <Run Foreground="MediumPurple" Text="In memory of Baysix. Fly high." />
                     </TextBlock>
+                    <Button Content="Check For Updates" VerticalAlignment="Top" HorizontalAlignment="Right"
+                            Margin="0,0,6,0" Width="120" />
                     <CheckBox Name="DarkModeBox" Content="Enable Dark Mode" HorizontalAlignment="Right"
-                            Margin="0,1,10,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938"
-                            IsChecked="True" Height="20" Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked" />
+                            Margin="0,30,6,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938"
+                            IsChecked="True" Height="20" Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked"
+                            Width="120" />
                 </Grid>
             </TabItem>
         </TabControl>
