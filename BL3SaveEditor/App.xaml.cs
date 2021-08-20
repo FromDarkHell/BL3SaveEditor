@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Windows;
 
 namespace BL3SaveEditor {

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props" Condition="Exists('..\packages\protobuf-net.MSBuild.3.0.101\build\protobuf-net.MSBuild.props')" />
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>

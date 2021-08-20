@@ -261,12 +261,12 @@ namespace BL3SaveEditor {
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
             
             #pragma warning disable CA1416 // Validate platform compatibility
-            if (OperatingSystem.IsWindows()) {
+            //if (OperatingSystem.IsWindows()) {
                 AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
                 #if !DEBUG
                 AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
                 #endif
-            }
+            //}
             #pragma warning restore CA1416 // Validate platform compatibility
 
 
@@ -828,7 +828,7 @@ namespace BL3SaveEditor {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", 
             Justification = "AutoUpdater.NET seems to not support non-Windows and so we don't")]
         private void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args) {
-            if(OperatingSystem.IsWindows()) {
+            //if(OperatingSystem.IsWindows()) {
                 if (args.Error == null) {
                     if (args.IsUpdateAvailable) {
                         MessageBoxResult result;
@@ -859,7 +859,7 @@ namespace BL3SaveEditor {
                         MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-            }
+            //}
         }
         #endregion
     }
