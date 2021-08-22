@@ -207,8 +207,8 @@
                                     HorizontalAlignment="Left" Width="140" VerticalAlignment="Top" Height="20" />
                         </Grid>
                     </Expander>
-                    <Expander IsExpanded="True" Header="Customization" HorizontalAlignment="Left" Margin="10,186,0,10"
-                            VerticalAlignment="Stretch" Width="446">
+                    <Expander IsExpanded="True" Header="Customization" HorizontalAlignment="Left" Margin="10,186,0,113"
+                            Width="446">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="446" Height="207">
                             <Label FontWeight="Normal" Content="Character Name: " VerticalAlignment="Top"
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
@@ -263,7 +263,7 @@
                                     HorizontalAlignment="Left" Width="271" />
                         </Grid>
                     </Expander>
-                    <Expander HorizontalAlignment="Right" Header="Unlocks" Margin="0,102,5,182" IsExpanded="True"
+                    <Expander HorizontalAlignment="Right" Header="Unlocks" Margin="0,102,5,278" IsExpanded="True"
                             Width="367">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <CheckBox Content="Eridian Analyzer"
@@ -296,7 +296,7 @@
                                     VerticalAlignment="Top" Width="110" Height="19" />
                         </Grid>
                     </Expander>
-                    <Expander HorizontalAlignment="Right" Header="Currency" Margin="0,10,10,316" IsExpanded="True"
+                    <Expander HorizontalAlignment="Right" Header="Currency" Margin="0,10,10,411" IsExpanded="True"
                             Width="362">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="66">
                             <Label FontWeight="Normal" Content="Money: " HorizontalAlignment="Left" Margin="10,10,0,0"
@@ -874,6 +874,13 @@
                         <LineBreak />
                         <Run
                                 Text="- Gibbed, apocalyptech, raptor/cfi2017, c0dycode, apple1417, LostInCompression, DOMIN8" />
+                        <LineBreak />
+                        <Run Text="Extra special thanks to" />
+                        <Hyperlink TextDecorations="Underline"
+                                NavigateUri="https://www.deviantart.com/brokennoah/art/Borderlands-3-icons-797030087">
+                            <Run Text="BrokenNoah" />
+                        </Hyperlink>
+                        <Run Text="for making the main icon of this program!" />
                         <LineBreak />
                         <Run Text="Without their help, this program would not exist." />
                         <LineBreak />

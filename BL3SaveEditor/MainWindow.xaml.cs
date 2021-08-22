@@ -38,7 +38,7 @@ namespace BL3SaveEditor {
         public bool showDebugMaps { get; set; } = false;
         public bool ForceLegitParts { get; set; } = true;
 
-        public ListCollectionView ValidPlayerClasses { 
+        public ListCollectionView ValidPlayerClasses {
             get {
                 return new ListCollectionView(BL3Save.ValidClasses.Keys.ToList());
             }
@@ -47,17 +47,17 @@ namespace BL3SaveEditor {
             get {
                 // Hasn't loaded a save yet
                 if (saveGame == null) return new ListCollectionView(new List<string>() { "" });
-                
+
                 string characterClassPath = saveGame.Character.PlayerClassData.PlayerClassPath;
                 var kvp = BL3Save.ValidClasses.Where(x => x.Value.PlayerClassPath == characterClassPath);
-                
+
                 // Unknown character?
-                if(!kvp.Any()) return new ListCollectionView(new List<string>() { "" });
+                if (!kvp.Any()) return new ListCollectionView(new List<string>() { "" });
                 string characterName = kvp.First().Key;
 
                 var headAssetPaths = DataPathTranslations.HeadNamesDictionary[characterName];
                 List<string> headNames = new List<string>();
-                foreach(string assetPath in headAssetPaths) {
+                foreach (string assetPath in headAssetPaths) {
                     string headName = DataPathTranslations.headAssetPaths[assetPath];
                     headNames.Add(headName);
                 }
@@ -144,7 +144,7 @@ namespace BL3SaveEditor {
         }
         public string SelectedBalance {
             get {
-                if (SelectedSerial == null) return null;                
+                if (SelectedSerial == null) return null;
                 return InventorySerialDatabase.GetShortNameFromBalance(SelectedSerial.Balance);
             }
             set {
@@ -161,7 +161,7 @@ namespace BL3SaveEditor {
             get {
                 if (SelectedSerial == null) return null;
                 string Manufacturer = SelectedSerial.Manufacturer;
-                
+
                 List<string> shortNames = InventorySerialDatabase.GetManufacturers();
                 List<string> longNames = InventorySerialDatabase.GetManufacturers(false);
 
@@ -169,7 +169,7 @@ namespace BL3SaveEditor {
             }
             set {
                 if (SelectedSerial == null) return;
-                
+
                 List<string> shortNames = InventorySerialDatabase.GetManufacturers();
                 List<string> longNames = InventorySerialDatabase.GetManufacturers(false);
 
@@ -200,7 +200,7 @@ namespace BL3SaveEditor {
                 if (SelectedSerial == null) return null;
                 List<string> validParts = new List<string>();
 
-                if(!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
+                if (!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
                 else {
                     validParts = InventorySerialDatabase.GetValidPartsForParts(SelectedSerial.InventoryKey, SelectedSerial.Parts, false);
                 }
@@ -226,8 +226,8 @@ namespace BL3SaveEditor {
             }
         }
 
-        public int MaximumBankSDUs { get { return SDU.MaximumBankSDUs;  } }
-        public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot;  } }
+        public int MaximumBankSDUs { get { return SDU.MaximumBankSDUs; } }
+        public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot; } }
         #endregion
 
         private static Debug.DebugConsole dbgConsole;
@@ -259,16 +259,11 @@ namespace BL3SaveEditor {
             dbgConsole = new Debug.DebugConsole();
 
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
-            
-            #pragma warning disable CA1416 // Validate platform compatibility
-            //if (OperatingSystem.IsWindows()) {
-                AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
-                #if !DEBUG
-                AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
-                #endif
-            //}
-            #pragma warning restore CA1416 // Validate platform compatibility
 
+            AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
+            #if !DEBUG
+            AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
+            #endif
 
         }
 
@@ -339,7 +334,7 @@ namespace BL3SaveEditor {
             };
 
             // Update the file like this so that way once you do a save as, it still changes the saved-as file instead of the originally opened file.
-            if(saveFileDialog.ShowDialog() == true) {
+            if (saveFileDialog.ShowDialog() == true) {
                 if (saveGame != null) saveGame.filePath = saveFileDialog.FileName;
                 else if (profile != null) profile.filePath = saveFileDialog.FileName;
             }
@@ -366,7 +361,7 @@ namespace BL3SaveEditor {
 
         #region Theme Toggling
         private void DarkModeBox_Checked(object sender, RoutedEventArgs e) {
-            if(bLaunched) {
+            if (bLaunched) {
                 bool bChecked = (bool)((CheckBox)sender).IsChecked;
                 ResourceLocator.SetColorScheme(Application.Current.Resources, bChecked ? ResourceLocator.DarkColorScheme : ResourceLocator.LightColorScheme);
 
@@ -383,7 +378,7 @@ namespace BL3SaveEditor {
         #region General
         private void RandomizeGUIDBtn_Click(object sender, RoutedEventArgs e) {
             Guid newGUID = Guid.NewGuid();
-            GUIDTextBox.Text = newGUID.ToString().Replace("-","").ToUpper();
+            GUIDTextBox.Text = newGUID.ToString().Replace("-", "").ToUpper();
         }
 
         private void AdjustSaveLevelsBtn_Click(object sender, RoutedEventArgs e) {
@@ -403,7 +398,7 @@ namespace BL3SaveEditor {
             if (!msgBox.Succeeded) return;
             level = msgBox.Result;
 
-            foreach(string file in fileDialog.FileNames) {
+            foreach (string file in fileDialog.FileNames) {
                 try {
                     if (!(BL3Tools.BL3Tools.LoadFileFromDisk(file) is BL3Save save)) {
                         Console.WriteLine("Read in file from \"{0}\"; Incorrect type: {1}");
@@ -412,7 +407,7 @@ namespace BL3SaveEditor {
                     save.Character.ExperiencePoints = PlayerXP.GetPointsForXPLevel(level);
                     BL3Tools.BL3Tools.WriteFileToDisk(save, false);
                 }
-                catch(Exception ex) {
+                catch (Exception ex) {
                     Console.WriteLine("Failed to adjust level of save: \"{0}\"\n{1}", ex.Message, ex.StackTrace);
                 }
             }
@@ -479,7 +474,7 @@ namespace BL3SaveEditor {
             bool bFastTravelEnabled = senderBx.IsChecked == true;
             string fastTravelToChange = ((senderBx.Content as TextBlock).Text);
             string assetPath = DataPathTranslations.FastTravelTranslations.FirstOrDefault(x => x.Value == fastTravelToChange).Key;
-            
+
             Console.WriteLine("Changed state of {0} ({2}) to {1}", fastTravelToChange, bFastTravelEnabled, assetPath);
             int amtOfPlaythroughs = saveGame.Character.ActiveTravelStationsForPlaythroughs.Count - 1;
             int playthroughIndex = SelectedPlaythroughBox.SelectedIndex;
@@ -489,7 +484,7 @@ namespace BL3SaveEditor {
             }
 
             var travelStations = saveGame.Character.ActiveTravelStationsForPlaythroughs[playthroughIndex].ActiveTravelStations;
-            if(bFastTravelEnabled) {
+            if (bFastTravelEnabled) {
                 travelStations.Add(new OakSave.ActiveFastTravelSaveData() {
                     ActiveTravelStationName = assetPath,
                     Blacklisted = false
@@ -538,7 +533,7 @@ namespace BL3SaveEditor {
             ListView listView = (sender as ListView);
             StringSerialPair svp = (StringSerialPair)listView.SelectedValue;
             SelectedSerial = svp.Val2;
-            
+
             // Scroll to the selected item (in case of duplication / etc)
             listView.ScrollIntoView(listView.SelectedItem);
 
@@ -551,7 +546,7 @@ namespace BL3SaveEditor {
             var listview = (sender as ListView);
             var scrollViewer = listview.FindVisualChildren<ScrollViewer>().First();
             // Multiply the value by 0.7 because just the delta value can be a bit much tbh
-            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta * 0.7) );
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta * 0.7));
 
             // Make sure no other elements can handle the events
             e.Handled = true;
@@ -593,7 +588,7 @@ namespace BL3SaveEditor {
                 var selectedValue = BackpackListView.Items.Cast<StringSerialPair>().Where(x => ReferenceEquals(x.Val2, item)).LastOrDefault();
                 BackpackListView.SelectedValue = selectedValue;
             }
-            catch(BL3Tools.BL3Tools.BL3Exceptions.SerialParseException ex) {
+            catch (BL3Tools.BL3Tools.BL3Exceptions.SerialParseException ex) {
                 string message = ex.Message;
                 Console.WriteLine($"Exception ({message}) parsing serial: {ex.ToString()}");
                 if (ex.knowCause)
@@ -603,9 +598,9 @@ namespace BL3SaveEditor {
         private void SyncEquippedBtn_Click(object sender, RoutedEventArgs e) {
             if (saveGame == null) return;
             int levelToSync = PlayerXP.GetLevelForPoints(saveGame.Character.ExperiencePoints);
-            foreach(var equipData in saveGame.Character.EquippedInventoryLists) {
+            foreach (var equipData in saveGame.Character.EquippedInventoryLists) {
                 if (!equipData.Enabled || equipData.InventoryListIndex < 0 || equipData.InventoryListIndex > saveGame.InventoryItems.Count - 1) continue;
-                
+
                 // Sync the level onto the item
                 saveGame.InventoryItems[equipData.InventoryListIndex].Level = levelToSync;
             }
@@ -621,9 +616,9 @@ namespace BL3SaveEditor {
 
                 levelToSync = msgBox.Result;
             }
-            else 
+            else
                 levelToSync = PlayerXP.GetLevelForPoints(saveGame.Character.ExperiencePoints);
-            
+
             foreach (Borderlands3Serial item in (profile == null ? saveGame.InventoryItems : profile.BankItems)) {
                 Console.WriteLine($"Syncing level for item ({item.UserFriendlyName}) from {item.Level} to {levelToSync}");
                 item.Level = levelToSync;
@@ -700,7 +695,7 @@ namespace BL3SaveEditor {
 
             if (obj.SelectedIndex != -1)
                 parts.RemoveAt(obj.SelectedIndex);
-            
+
             // Update the valid parts
             ValidParts.Refresh();
             ValidGenerics.Refresh();
@@ -744,7 +739,7 @@ namespace BL3SaveEditor {
             if (fullName == null) return;
 
             // Do some weird jank in order to get the list of the value we've changed, so that way we can set the index
-            List<string>  parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
+            List<string> parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
             // The selected index stays updated with the current combobox because of "ComboBox_DropDownChanged".
             parts[parent.SelectedIndex] = fullName;
         }
@@ -825,41 +820,37 @@ namespace BL3SaveEditor {
         #endregion
 
         #region Auto Updating
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", 
-            Justification = "AutoUpdater.NET seems to not support non-Windows and so we don't")]
         private void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args) {
-            //if(OperatingSystem.IsWindows()) {
-                if (args.Error == null) {
-                    if (args.IsUpdateAvailable) {
-                        MessageBoxResult result;
-                        if (args.Mandatory.Value) {
-                            result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. This update is required. Press OK to begin updating.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else {
-                            result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. You're using version {args.InstalledVersion}. Do you want to update now?", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
-                        }
-
-                        if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
-                            try {
-                                if (AutoUpdater.DownloadUpdate(args)) {
-                                    Application.Current.Shutdown();
-                                }
-                            }
-                            catch (Exception exception) {
-                                MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
-                        }
-                    }
-                }
-                else {
-                    if (args.Error is System.Net.WebException) {
-                        MessageBox.Show("There is a problem reaching update server. Please check your internet connection and try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (args.Error == null) {
+                if (args.IsUpdateAvailable) {
+                    MessageBoxResult result;
+                    if (args.Mandatory.Value) {
+                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. This update is required. Press OK to begin updating.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else {
-                        MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                        result = MessageBox.Show($@"There is a new version {args.CurrentVersion} available. You're using version {args.InstalledVersion}. Do you want to update now?", "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                    }
+
+                    if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
+                        try {
+                            if (AutoUpdater.DownloadUpdate(args)) {
+                                Application.Current.Shutdown();
+                            }
+                        }
+                        catch (Exception exception) {
+                            MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                 }
-            //}
+            }
+            else {
+                if (args.Error is System.Net.WebException) {
+                    MessageBox.Show("There is a problem reaching update server. Please check your internet connection and try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else {
+                    MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
         #endregion
     }

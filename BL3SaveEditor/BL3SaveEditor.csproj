@@ -1,12 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
     <StartupObject>BL3SaveEditor.App</StartupObject>
+
+    <NoWin32Manifest>true</NoWin32Manifest>
+
+    <ApplicationIcon>Borderlands 3 002 512 x 512 ICO.ico</ApplicationIcon>
+
+    <!--<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>-->
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Icons\fugue\disk--plus.png" />

@@ -1,0 +1,2 @@
+All of these assets in this folder come courtesy of [BrokenNoah](https://www.deviantart.com/brokennoah/art/Borderlands-3-icons-797030087)
+Follow them on DeviantArt and their other platforms for all of their creative work!
