@@ -11,9 +11,6 @@ using System.Windows.Media;
 using System.Collections.ObjectModel;
 using BL3Tools.GameData.Items;
 using Newtonsoft.Json.Linq;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Threading;
 
 namespace BL3SaveEditor.Helpers {
 

@@ -20,6 +20,9 @@
     <DebugSymbols>true</DebugSymbols>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Single File' ">
+    <OutputPath>bin\Single File\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomizationGenerator.py" />
   </ItemGroup>
