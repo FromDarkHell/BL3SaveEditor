@@ -116,6 +116,9 @@
     <Compile Include="Save.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="FixProtobufs.ps1" />
     <EmbeddedResource Include="GameData\Items\SerialDB\Inventory Serial Number Database.json" />
     <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_key.json" />
