@@ -30,6 +30,7 @@ namespace BL3SaveEditor {
 
         #region Databinding Data
         public static RoutedCommand DuplicateCommand { get; } = new RoutedCommand();
+        public static RoutedCommand DeleteCommand { get; } = new RoutedCommand();
 
         public int maximumXP { get; } = PlayerXP._XPMaximumLevel;
         public int minimumXP { get; } = PlayerXP._XPMinimumLevel;
@@ -116,13 +117,13 @@ namespace BL3SaveEditor {
                     // Split the items out into groups, assume weapons because they're the most numerous and different
                     string itemType = "Weapon";
 
-                    if (serial.InventoryKey == null) continue;
+                    if (serial.InventoryKey == null) itemType = "Other";
                     else if (serial.InventoryKey.Contains("_ClassMod")) itemType = "Class Mods";
                     else if (serial.InventoryKey.Contains("_Artifact")) itemType = "Artifacts";
                     else if (serial.InventoryKey.Contains("_Shield")) itemType = "Shields";
                     else if (serial.InventoryKey.Contains("_Customization")) itemType = "Customizations";
                     else if (serial.InventoryKey.Contains("_GrenadeMod_")) itemType = "Grenades";
-
+                    
                     px.Add(new StringSerialPair(itemType, serial));
                 }
 
@@ -164,8 +165,13 @@ namespace BL3SaveEditor {
                 
                 List<string> shortNames = InventorySerialDatabase.GetManufacturers();
                 List<string> longNames = InventorySerialDatabase.GetManufacturers(false);
+                try {
+                    return shortNames[longNames.IndexOf(Manufacturer)];
+                }
+                catch {
+                    return Manufacturer;
+                }
 
-                return shortNames[longNames.IndexOf(Manufacturer)];
             }
             set {
                 if (SelectedSerial == null) return;
@@ -202,7 +208,7 @@ namespace BL3SaveEditor {
 
                 if(!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey(SelectedSerial.InventoryKey);
                 else {
-                    validParts = InventorySerialDatabase.GetValidPartsForParts(SelectedSerial.InventoryKey, SelectedSerial.Parts, false);
+                    validParts = InventorySerialDatabase.GetValidPartsForParts(SelectedSerial.InventoryKey, SelectedSerial.Parts);
                 }
                 validParts = validParts.Select(x => x.Split('.').Last()).ToList();
                 validParts.Sort();
@@ -220,7 +226,7 @@ namespace BL3SaveEditor {
                 // but in the future they might so let's still enforce legit parts on them
                 if (!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
                 else {
-                    validParts = InventorySerialDatabase.GetValidPartsForParts("InventoryGenericPartData", SelectedSerial.GenericParts, false);
+                    validParts = InventorySerialDatabase.GetValidPartsForParts("InventoryGenericPartData", SelectedSerial.GenericParts);
                 }
                 return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
             }
@@ -304,6 +310,10 @@ namespace BL3SaveEditor {
             // Refresh the bindings on the GUI
             DataContext = null;
             DataContext = this;
+
+            BackpackListView.ItemsSource = null;
+            BackpackListView.ItemsSource = SlotItems;
+            RefreshBackpackView();
         }
 
         private void SaveOpenedFile() {
@@ -570,19 +580,21 @@ namespace BL3SaveEditor {
                 BackpackListView.ItemsSource = SlotItems;
                 RefreshBackpackView();
             }
-
-
         }
         private void PasteCodeBtn_Click(object sender, RoutedEventArgs e) {
             string serialCode = Clipboard.GetText();
-
+            Console.WriteLine("Pasting serial code: {0}", serialCode);
             try {
                 Borderlands3Serial item = Borderlands3Serial.DecryptSerial(serialCode);
+                if (item == null) return;
 
                 if (profile == null) saveGame.InventoryItems.Add(item);
                 else profile.BankItems.Add(item);
 
+                BackpackListView.ItemsSource = null;
+                BackpackListView.ItemsSource = SlotItems;
                 BackpackListView.Items.Refresh();
+                RefreshBackpackView();
 
                 var selectedValue = BackpackListView.Items.Cast<StringSerialPair>().Where(x => ReferenceEquals(x.Val2, item)).LastOrDefault();
                 BackpackListView.SelectedValue = selectedValue;
@@ -624,6 +636,7 @@ namespace BL3SaveEditor {
             }
             RefreshBackpackView();
         }
+        
         private void CopyItem_Executed(object sender, ExecutedRoutedEventArgs e) {
             StringSerialPair svp = (StringSerialPair)BackpackListView.SelectedValue;
             SelectedSerial = svp.Val2;
@@ -643,6 +656,35 @@ namespace BL3SaveEditor {
             CopyItem_Executed(null, e);
             PasteCodeBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
+        private void DeleteBinding_Executed(object sender, ExecutedRoutedEventArgs e) {
+            StringSerialPair svp = (StringSerialPair)BackpackListView.SelectedValue;
+
+            Console.WriteLine("Deleting item: {0} ({1})", svp.Val1, svp.Val2.UserFriendlyName);
+            if (saveGame == null)
+                profile.BankItems.RemoveAt(BackpackListView.SelectedIndex);
+            else {
+                int indx = BackpackListView.SelectedIndex;
+
+                // We need to preemptively adjust the equipped inventory lists so that way the equipped items stay consistent with the removed items.
+                //? Consider putting this into BL3Tools instead?
+                int eilIndex = saveGame.InventoryItems.FindIndex(x => ReferenceEquals(x, svp.Val2));
+                foreach(var vx in saveGame.Character.EquippedInventoryLists) {
+                    if (vx.InventoryListIndex == eilIndex) 
+                        vx.InventoryListIndex = -1;
+                    else if(vx.InventoryListIndex > eilIndex)
+                        vx.InventoryListIndex -= 1;
+                }
+
+                saveGame.InventoryItems.RemoveAt(indx);
+            }
+
+            BackpackListView.ItemsSource = null;
+            BackpackListView.ItemsSource = SlotItems;
+            BackpackListView.Items.Refresh();
+            RefreshBackpackView();
+        }
+
+
         private void ChangeTypeBtn_Click(object sender, RoutedEventArgs e) {
             var itemKey = InventoryKeyDB.GetKeyForBalance(InventorySerialDatabase.GetBalanceFromShortName(SelectedBalance));
             var itemType = InventoryKeyDB.ItemTypeToKey.Where(x => x.Value.Contains(itemKey)).Select(x => x.Key).FirstOrDefault();
@@ -661,7 +703,6 @@ namespace BL3SaveEditor {
         }
         private void AddItemPartBtn_Click(object sender, RoutedEventArgs e) {
             if (SelectedSerial == null) return;
-
 
             var btn = (Button)sender;
             ListView obj = ((ListView)FindName(btn.Name.Replace("AddBtn", "") + "ListView"));
@@ -692,9 +733,29 @@ namespace BL3SaveEditor {
 
             List<string> parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
 
-            if (obj.SelectedIndex != -1)
+            if (obj.SelectedIndex != -1) {
+                var longName = parts[obj.SelectedIndex];
+                if (ForceLegitParts) {
+                    foreach (string part in parts) {
+                        List<string> dependencies = InventorySerialDatabase.GetDependenciesForPart(part);
+                        if (part != longName && dependencies.Contains(longName)) {
+                            var result = MessageBox.Show("Are you sure you want to delete this part? If you do that, you'll make the item illegitimate.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+                            if(result == MessageBoxResult.No) return;
+                            else {
+                                // Update the force legit text box because they clearly don't want legit items :P
+                                ForceLegitParts = false;
+                                ForceLegitPartsChkBox.DataContext = null;
+                                ForceLegitPartsChkBox.DataContext = this;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Remove the part
                 parts.RemoveAt(obj.SelectedIndex);
-            
+            }
+
             // Update the valid parts
             ValidParts.Refresh();
             ValidGenerics.Refresh();
@@ -706,7 +767,7 @@ namespace BL3SaveEditor {
         private void ComboBox_DropDownChanged(object sender, EventArgs e) {
             ComboBox box = ((ComboBox)sender);
             ListView parent = box.FindParent<ListView>();
-
+            if (parent == null) return;
             parent.SelectedValue = box.SelectedValue;
         }
         private string GetSelectedPart(string type, object sender, SelectionChangedEventArgs e) {
@@ -731,6 +792,7 @@ namespace BL3SaveEditor {
         }
         private void ItemPart_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             ListView parent = ((ComboBox)sender).FindParent<ListView>();
+            if (parent == null) return;
             string propertyName = parent.Name.Split(new string[] { "ListView" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             if (propertyName == default) return;
 
@@ -738,9 +800,20 @@ namespace BL3SaveEditor {
             if (fullName == null) return;
 
             // Do some weird jank in order to get the list of the value we've changed, so that way we can set the index
-            List<string>  parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
+            List<string> parts = (List<string>)SelectedSerial.GetType().GetProperty(propertyName).GetValue(SelectedSerial, null);
             // The selected index stays updated with the current combobox because of "ComboBox_DropDownChanged".
             parts[parent.SelectedIndex] = fullName;
+
+            if(ForceLegitParts) {
+                List<string> dependantParts = InventorySerialDatabase.GetDependenciesForPart(fullName);
+                if (dependantParts == null || dependantParts?.Count == 0) return;
+                if (parts.Any(x => dependantParts.Contains(x))) return;
+                else {
+                    // Pick the first dependant part; This might not be what the user actually wants but ssh
+                    parts.Add(dependantParts.FirstOrDefault());
+                    RefreshBackpackView();
+                }
+            }
         }
         #endregion
 
@@ -808,11 +881,13 @@ namespace BL3SaveEditor {
         }
 
         #region Customization Unlockers/Lockers
-        private void UnlockRoomDeco_Click(object sender, RoutedEventArgs e) {
+        // TODO: Implement customization unlockers
 
+        private void UnlockRoomDeco_Click(object sender, RoutedEventArgs e) {
+            
         }
         private void UnlockCustomizations_Click(object sender, RoutedEventArgs e) {
-
+           
         }
         private void LockRoomDeco_Click(object sender, RoutedEventArgs e) {
 
@@ -865,7 +940,5 @@ namespace BL3SaveEditor {
                 }
             }
         }
-
-
     }
 }

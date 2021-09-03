@@ -53,6 +53,9 @@
     <OutputPath>bin\Single File\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.2.10, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.3.2\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -97,23 +100,20 @@
     <Compile Include="BL3Tools.cs" />
     <Compile Include="Decryption\CRC32.cs" />
     <Compile Include="Decryption\ProfileBogoCrypt.cs" />
-    <Compile Include="Decryption\ProfileBogoCrypt.cs" />
     <Compile Include="Decryption\SaveBogoCrypt.cs" />
     <Compile Include="GameData\DataPathTranslations.cs" />
     <Compile Include="GameData\Experience.cs" />
-    <Compile Include="GameData\Experience.cs" />
     <Compile Include="GameData\Items\InventoryKeyDB.cs" />
-    <Compile Include="GameData\Items\InventoryNameDatabase.cs" />
     <Compile Include="GameData\Items\InventoryNameDatabase.cs" />
     <Compile Include="GameData\Items\InventorySerialDatabase.cs" />
     <Compile Include="GameData\Items\Borderlands3Serial.cs" />
-    <Compile Include="GameData\SDU.cs" />
     <Compile Include="GameData\SDU.cs" />
     <Compile Include="GVAS\GVASSave.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Save.cs" />
-    <Compile Include="Save.cs" />
+    <Compile Include="TMSUnpack\TMSArchive.cs" />
+    <Compile Include="TMSUnpack\TMSUnpacker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">

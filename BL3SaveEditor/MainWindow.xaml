@@ -6,8 +6,7 @@
         xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:pg="clr-namespace:Xceed.Wpf.Toolkit.PropertyGrid;assembly=xceed.Wpf.Toolkit" mc:Ignorable="d"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" mc:Ignorable="d"
         Title="Borderlands 3 Save Editor" Height="612" Width="859"
         Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True"
         Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -131,24 +130,6 @@
                             Value="{Binding Path=saveGame.Character.TimePlayedSeconds, Mode=TwoWay, Converter={StaticResource IntegerToSpanConverter1}}"
                             HorizontalAlignment="Stretch" Margin="116,66,328,0" VerticalAlignment="Top"
                             ToolTip="Format: Days.Hours:Minutes:Seconds" />
-
-                    <Expander Header="Importing" HorizontalAlignment="Stretch" Height="149" Margin="10,0,658,0"
-                            VerticalAlignment="Bottom" IsExpanded="True">
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="129">
-                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Skills"
-                                    HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130"
-                                    ToolTip="Imports the skills from a different save" />
-                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Missions"
-                                    HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Width="130"
-                                    ToolTip="Imports the mission data from a different save" />
-                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import World"
-                                    HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" Width="130"
-                                    ToolTip="Imports world/fast travel data from a different save" />
-                            <Button IsEnabled="{Binding Path=bSaveLoaded}" Content="Import Stats"
-                                    HorizontalAlignment="Left" Margin="10,97,0,0" VerticalAlignment="Top" Width="130"
-                                    ToolTip="Imports statistics / other data from a different save" />
-                        </Grid>
-                    </Expander>
                 </Grid>
             </TabItem>
             <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}">
@@ -393,6 +374,8 @@
                         <CommandBinding Command="{x:Static local:MainWindow.DuplicateCommand}"
                                 Executed="DuplicateItem_Executed" />
                         <CommandBinding Command="Paste" Executed="PasteItem_Executed" />
+                        <CommandBinding Command="{x:Static local:MainWindow.DeleteCommand}"
+                                Executed="DeleteBinding_Executed" />
                     </Grid.CommandBindings>
                     <Grid.InputBindings>
                         <KeyBinding Command="Paste" Key="V" Modifiers="Ctrl" />
@@ -492,21 +475,36 @@
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
 
+                            <ListView.InputBindings>
+                                <KeyBinding Gesture="CTRL+D" Command="{x:Static local:MainWindow.DuplicateCommand}" />
+                                <KeyBinding Gesture="Delete" Command="{x:Static local:MainWindow.DeleteCommand}" />
+                            </ListView.InputBindings>
+
+
                             <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Command="Copy">
                                         <MenuItem.Icon>
-                                            <Image Source="Icons\game\AllModIcons_I30.png" Height="16" Width="16" />
+                                            <Image Source="Icons\fugue\document-copy.png" Height="16" Width="16" />
                                         </MenuItem.Icon>
                                         <MenuItem.Header>Copy Code</MenuItem.Header>
                                         <MenuItem.InputGestureText>Ctrl+C</MenuItem.InputGestureText>
                                     </MenuItem>
                                     <MenuItem Command="{x:Static local:MainWindow.DuplicateCommand}">
                                         <MenuItem.Icon>
-                                            <Image Source="Icons\game\AllModIcons_I30.png" Height="16" Width="16" />
+                                            <Image Source="Icons\fugue\documents-stack.png" Height="16" Width="16" />
                                         </MenuItem.Icon>
                                         <MenuItem.Header>Duplicate Item</MenuItem.Header>
                                         <MenuItem.InputGestureText>Ctrl+D</MenuItem.InputGestureText>
+                                    </MenuItem>
+                                    <Separator />
+
+                                    <MenuItem Command="{x:Static local:MainWindow.DeleteCommand}">
+                                        <MenuItem.Icon>
+                                            <Image Source="Icons\fugue\cross-script.png" Height="16" Width="16" />
+                                        </MenuItem.Icon>
+                                        <MenuItem.Header>Delete Item</MenuItem.Header>
+                                        <MenuItem.InputGestureText>Delete</MenuItem.InputGestureText>
                                     </MenuItem>
                                 </ContextMenu>
                             </ListView.ContextMenu>
@@ -535,7 +533,8 @@
                                         Width="100" Height="25" />
                                 <xctk:IntegerUpDown Value="{Binding Path=SelectedSerial.Level}" Minimum="0"
                                         Maximum="{Binding Path=maximumXP}" HorizontalAlignment="Stretch"
-                                        Margin="115,10,10,0" VerticalAlignment="Top" />
+                                        Margin="115,10,10,0" VerticalAlignment="Top"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                 <Label FontWeight="Normal" Content="Mayhem Level: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"
                                         Width="100" Height="20" />
@@ -543,10 +542,12 @@
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
                                         HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
-                                        ValueChanged="IntegerUpDown_ValueChanged" />
+                                        ValueChanged="IntegerUpDown_ValueChanged"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                 <ComboBox ItemsSource="{Binding ValidBalances}"
                                         SelectedValue="{Binding SelectedBalance, Mode=TwoWay}" Margin="115,60,104,0"
-                                        VerticalAlignment="Top" />
+                                        VerticalAlignment="Top"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                 <Label FontWeight="Normal" Content="Item Balance: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top"
                                         Width="100" Height="24" />
@@ -555,13 +556,15 @@
                                         Width="100" Height="24" />
                                 <ComboBox ItemsSource="{Binding ValidManufacturers}"
                                         SelectedValue="{Binding SelectedManufacturer, Mode=TwoWay}"
-                                        HorizontalAlignment="Stretch" Margin="115,118,10,0" VerticalAlignment="Top" />
+                                        HorizontalAlignment="Stretch" Margin="115,118,10,0" VerticalAlignment="Top"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                 <Label FontWeight="Normal" Content="Inventory Data: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top"
                                         Width="100" Height="24" />
                                 <ComboBox ItemsSource="{Binding InventoryDatas}"
                                         SelectedValue="{Binding SelectedInventoryData, Mode=TwoWay}"
-                                        HorizontalAlignment="Stretch" Margin="115,89,10,0" VerticalAlignment="Top">
+                                        HorizontalAlignment="Stretch" Margin="115,89,10,0" VerticalAlignment="Top"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}">
                                     <ComboBox.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <VirtualizingStackPanel VirtualizingStackPanel.IsVirtualizing="True"
@@ -571,11 +574,14 @@
                                 </ComboBox>
                                 <Button Content="Edit Balance" Click="ChangeTypeBtn_Click" Name="ChangeTypeBtn"
                                         HorizontalAlignment="Right" Margin="0,60,10,0" VerticalAlignment="Top"
-                                        Width="89" />
+                                        Width="89"
+                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                 <CheckBox Content="Force Legit Parts" HorizontalAlignment="Left" Margin="10,147,0,0"
-                                        VerticalAlignment="Top" Width="108" IsChecked="{Binding Path=ForceLegitParts}" />
+                                        VerticalAlignment="Top" Width="108"
+                                        DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                                        IsChecked="{Binding Path=ForceLegitParts, Mode=TwoWay}" Name="ForceLegitPartsChkBox" />
                                 <Grid HorizontalAlignment="Stretch" Margin="10,168,0,0" Background="Transparent"
-                                        VerticalAlignment="Stretch">
+                                        VerticalAlignment="Stretch" >
                                     <Grid.Resources>
 
                                         <helpers:SerialPartConverter x:Key="MainPartConverter1" />
@@ -664,11 +670,13 @@
                                     </Grid>
 
                                     <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Left"
-                                            Margin="177,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
-                                            Grid.Column="0" Click="DeleteItemPartBtn_Click" />
+                                            Margin="185,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
+                                            Grid.Column="0" Click="DeleteItemPartBtn_Click"
+                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                     <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right"
-                                            Margin="0,0,194,10" VerticalAlignment="Bottom" Width="68" Height="24"
-                                            Grid.Column="0" Click="AddItemPartBtn_Click" />
+                                            Margin="0,0,202,10" VerticalAlignment="Bottom" Width="68" Height="24"
+                                            Grid.Column="0" Click="AddItemPartBtn_Click"
+                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
 
                                     <Grid Margin="10,31,0,39" Grid.Column="1" HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
@@ -711,11 +719,13 @@
                                     </Grid>
 
                                     <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Left"
-                                            Margin="177,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
-                                            Grid.Column="1" Click="DeleteItemPartBtn_Click" />
+                                            Margin="195,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
+                                            Grid.Column="1" Click="DeleteItemPartBtn_Click"
+                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                     <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right"
-                                            Margin="0,0,184,10" VerticalAlignment="Bottom" Width="68" Height="24"
-                                            Grid.Column="1" Click="AddItemPartBtn_Click" />
+                                            Margin="0,0,192,10" VerticalAlignment="Bottom" Width="68" Height="24"
+                                            Grid.Column="1" Click="AddItemPartBtn_Click"
+                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                     <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
                                             Margin="10,10,0,0" VerticalAlignment="Top" Height="16" Grid.Column="1"
                                             Content="{Binding Path=SelectedSerial.GenericParts.Count}"
@@ -796,9 +806,9 @@
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="LockRoomDeco_Click" />
 
                             <Button Content="Unlock Customizations" Margin="244,0,0,55" HorizontalAlignment="Left"
-                                    Width="155" Height="30" VerticalAlignment="Bottom" Click="Button_Click" />
+                                    Width="155" Height="30" VerticalAlignment="Bottom" Click="LockRoomDeco_Click" />
                             <Button Content="Lock Decorations" Margin="244,0,0,20" HorizontalAlignment="Left"
-                                    Width="155" Height="30" VerticalAlignment="Bottom" />
+                                    Width="155" Height="30" VerticalAlignment="Bottom" Click="LockCustomizations_Click" />
                         </Grid>
                     </Expander>
                     <xctk:IntegerUpDown Value="{Binding Path=profile.Profile.GuardianRank.AvailableTokens, Mode=TwoWay}"

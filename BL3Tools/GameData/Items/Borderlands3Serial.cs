@@ -34,6 +34,8 @@ namespace BL3Tools.GameData.Items {
     // - BL3(AwAAAAD7u4A86PMBE4wakIcjwVhsgKJLUOHyoFJxhxAAAAAAAGCMAQ==) :: Skullmasher (Non-Elemental Mayhem 10 Jakobs Sniper)
     // - BL3(AwAAAADAeoC8y1QBE0QesjkdMfnY4w4hAAAAAAAAGRAA) :: Trickshot (Jakobs Pistol)
     // - BL3(AwAAAACxlIC1y1QBE0QesjkdMfnY444QAAAAAACADAg=)
+    // - BL3(AwAAAAA4jIA5lMPiFgAAAA==) :: Customization
+    // - BL3(AwAAAAChWIC5UhEHFgAAAA==) :: Customization
 
     /// <summary>
     /// A class representing a Borderlands 3 Serial Item
@@ -67,6 +69,12 @@ namespace BL3Tools.GameData.Items {
         /// <param name="seed">A seed for which to do the encryption; defaults to 0, be nice to each other instead (:</param>
         /// <returns>A BL3(...) encoded string of the <c>Borderlands3Serial</c></returns>
         public byte[] EncryptSerialToBytes(uint seed = 0) {
+
+            // Avoid deleting items that we don't know how to parse....
+            if (InventoryKey == null && OriginalData != null) return OriginalData;
+
+            ValidateFields();
+
             byte[] header = Helpers.ConcatArrays(
                 new byte[] { SerialVersion },
                 Converters.UInt32ToBytes(seed, true)
@@ -234,16 +242,21 @@ namespace BL3Tools.GameData.Items {
                 for (int i = 0; i < additionalCount; i++) 
                     additionalData.Add(reader.ReadInt32(8));
 
-                // The ""customization"" parts should be fully zero.
-                if(reader.ReadInt32(4) != 0)
-                    throw new BL3Tools.BL3Exceptions.SerialParseException(Convert.ToBase64String(serial), serialVersion, SerialDatabaseVersion, "Customization parts included...?");
+                try {
+                    // The ""customization"" parts should be fully zero.
+                    if (reader.ReadInt32(4) != 0)
+                        throw new BL3Tools.BL3Exceptions.SerialParseException(Convert.ToBase64String(serial), serialVersion, SerialDatabaseVersion, "Customization parts included...?");
 
-                // If the serial version is >4, we've got rerolled data
-                if (serialVersion >= 4)
-                    amountRerolled = reader.ReadInt32(8);
+                    // If the serial version is >4, we've got rerolled data
+                    if (serialVersion >= 4)
+                        amountRerolled = reader.ReadInt32(8);
 
-                if(reader.BitsRemaining() > 7)
-                    throw new BL3Tools.BL3Exceptions.SerialParseException(Convert.ToBase64String(serial), serialVersion, SerialDatabaseVersion, "Zero-Padding incorrect");
+                    if (reader.BitsRemaining() > 7)
+                        throw new BL3Tools.BL3Exceptions.SerialParseException(Convert.ToBase64String(serial), serialVersion, SerialDatabaseVersion, "Zero-Padding incorrect");
+                }
+                catch(Exception ex) when (!(ex is BL3Tools.BL3Exceptions.SerialParseException)) {
+                    // The data in this isn't *too* important, so as long as it's not a serial parse exception, we can still continue on parsing it.
+                }
             }
 
             // Customizations don't have parts so we do this;
@@ -279,7 +292,7 @@ namespace BL3Tools.GameData.Items {
 
         /// <summary>
         /// Creates a <c>Borderlands3Serial</c> object based off of the balance data passed in
-        /// Use this function when you want to create a new item
+        /// <para>Use this function when you want to create a new item</para>
         /// </summary>
         /// <param name="balance">Balance of the item to create; can be long or short</param>
         /// <returns>A Borderlands3Serial object representing the balance; completely partless etc</returns>
@@ -321,6 +334,30 @@ namespace BL3Tools.GameData.Items {
             string partValue = InventorySerialDatabase.GetPartByIndex(category, partIndex);
 
             return partValue;
+        }
+
+        public void ValidateFields() {
+            string fullName = InventorySerialDatabase.GetBalanceFromShortName(this.Balance);
+            if (fullName != null) 
+                this.Balance = fullName;
+
+            string invData = InventorySerialDatabase.GetInventoryDatas(false).FirstOrDefault(x => x.EndsWith(InventoryData));
+            if (!string.IsNullOrEmpty(invData)) 
+                this.InventoryData = invData;
+            
+            string manu = InventorySerialDatabase.GetManufacturers(false).FirstOrDefault(x => x.EndsWith(Manufacturer));
+            if (!string.IsNullOrEmpty(manu))
+                this.Manufacturer = manu;
+            this.InventoryKey = InventoryKeyDB.GetKeyForBalance(Balance);
+
+            if(InventoryKey != null) {
+                var validParts = InventorySerialDatabase.GetPartsForInvKey(InventoryKey);
+                this.Parts.RemoveAll(x => !validParts.Contains(x));
+
+                var validGenerics = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
+                this.GenericParts.RemoveAll(x => !GenericParts.Contains(x));
+            }
+
         }
 
         // Credits to Rick/Gibbed for the BogoEncrypt functions from their BL2 save editor:

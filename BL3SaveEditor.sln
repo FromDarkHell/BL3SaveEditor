@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BL3SaveEditor", "BL3SaveEdi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BL3Tools", "BL3Tools\BL3Tools.csproj", "{EEFEAB45-B558-4D33-9C74-D68660E26921}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CustomizationGenerator", "CustomizationGenerator\CustomizationGenerator.pyproj", "{0B16C2F4-E535-456C-9547-06328ED6A585}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IOTools", "IOTools\IOTools.csproj", "{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{83376407-428A-4A92-B64D-F5956CCEA666}"
@@ -37,9 +35,6 @@ Global
 		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Single File|Any CPU.ActiveCfg = Release|Any CPU
 		{EEFEAB45-B558-4D33-9C74-D68660E26921}.Single File|Any CPU.Build.0 = Release|Any CPU
-		{0B16C2F4-E535-456C-9547-06328ED6A585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0B16C2F4-E535-456C-9547-06328ED6A585}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0B16C2F4-E535-456C-9547-06328ED6A585}.Single File|Any CPU.ActiveCfg = Release|Any CPU
 		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B93FF5DB-FFEF-4F81-812E-F5FDF8CDFBBE}.Release|Any CPU.ActiveCfg = Release|Any CPU

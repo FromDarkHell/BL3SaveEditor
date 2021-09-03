@@ -6,6 +6,7 @@ using System.Reflection;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using BL3Tools.GameData.Items;
+using System.Text.RegularExpressions;
 
 namespace BL3Tools.GameData {
     public static class DataPathTranslations {
@@ -31,18 +32,47 @@ namespace BL3Tools.GameData {
         public static readonly string VaultCard2Path = "/Game/Gear/_Shared/_Design/InventoryCategories/InventoryCategory_VaultCard2Key";
 
 
-        public static readonly uint GoldenKeyHash;
-        public static readonly uint DiamondKeyHash;
-        public static readonly uint VaultCard1Hash;
-        public static readonly uint VaultCard2Hash;
-        public static readonly uint MoneyHash;
-        public static readonly uint EridiumHash;
+        public static uint GoldenKeyHash { get; private set; }
+        public static uint DiamondKeyHash { get; private set; }
+        public static uint VaultCard1Hash { get; private set; }
+        public static uint VaultCard2Hash { get; private set; }
+        public static uint MoneyHash { get; private set; }
+        public static uint EridiumHash { get; private set; }
 
         private static readonly string embeddedFastTravelDatabasePath = "BL3Tools.GameData.Mappings.fast_travel_to_name.json";
 
+        public static void Initialize() {
+            Regex headRegex = new Regex(".*DA_(BM|GNR|OP|SRN)Head.*", RegexOptions.Compiled);
 
+            emotesAssetPaths.Clear();
+            decoAssetPaths.Clear();
+            headAssetPaths.Clear();
+            skinAssetPaths.Clear();
+            echoAssetPaths.Clear();
+            weaponAssetPaths.Clear();
+            trinketAssetPaths.Clear();
 
-        static DataPathTranslations() {
+            // Now we're gonna update the emotes / customization assets.
+            foreach (var kvp in InventoryNameDatabase.NameDictionary) {
+
+                // So this replacement here isn't exactly the *best* idea
+                // It assumes that Gearbox actually does consistent naming practice which isn't always the case
+                // But in the available customizations/etc so far, it's fine (:
+                string assetPath = kvp.Key.Replace("InvBal_","");
+                string name = kvp.Value;
+
+                if (assetPath.ToLowerInvariant().Contains("customemote_")) emotesAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("roomdeco")) decoAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("customhead_") || headRegex.IsMatch(assetPath)) headAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("customskin_")) skinAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("echotheme_")) echoAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("weaponskin_")) weaponAssetPaths.Add(assetPath, name);
+                else if (assetPath.ToLowerInvariant().Contains("trinket_")) trinketAssetPaths.Add(assetPath, name);
+            }
+
+            weaponSkinHashes.Clear();
+            trinketHashes.Clear();
+
             foreach (string assetPath in weaponAssetPaths.Keys)
                 weaponSkinHashes.Add(CRC32.Get(assetPath));
             foreach (string assetPath in trinketAssetPaths.Keys)
@@ -66,6 +96,9 @@ namespace BL3Tools.GameData {
             }
         }
 
+        static DataPathTranslations() {
+            Initialize();
+        }
 
         #region Functions
 
@@ -94,7 +127,7 @@ namespace BL3Tools.GameData {
 
         #region Fast Travels
 
-        public static readonly List<string> UnobtainableFastTravels = new List<string>() {
+        public static List<string> UnobtainableFastTravels { get; private set; } = new List<string>() {
             "/Game/GameData/FastTravel/FTS_OrbitalPlatform.FTS_OrbitalPlatform",
             "/Game/PatchDLC/Raid1/GameData/FastTravel/LevelTravelData/FTS_MaliwanTD_SendOnly.FTS_MaliwanTD_SendOnly",
             "/Game/GameData/FastTravel/FTS_ProvingGrounds01.FTS_ProvingGrounds01",
@@ -136,7 +169,7 @@ namespace BL3Tools.GameData {
             "/Game/GameData/FastTravel/FTS_CityBoss_SendOnly.FTS_CityBoss_SendOnly"
         };
 
-        public static readonly Dictionary<string, string> FastTravelTranslations = new Dictionary<string, string>();
+        public static Dictionary<string, string> FastTravelTranslations { get; private set; } = new Dictionary<string, string>(); 
 
         #endregion
 
@@ -178,7 +211,6 @@ namespace BL3Tools.GameData {
 
         #region Customizations
         // TODO: I'd love to basically remove this and get all of these pieces of data from the SerialDB, etc.
-
         public static readonly Dictionary<string, string> emotesAssetPaths = new Dictionary<string, string>(){
     {"/Game/PlayerCharacters/_Customizations/Beastmaster/Emotes/CustomEmote_Beastmaster_02_Cheer.CustomEmote_Beastmaster_02_Cheer", "Cheer"},
     {"/Game/PlayerCharacters/_Customizations/Beastmaster/Emotes/CustomEmote_Beastmaster_11_Chicken_Dance.CustomEmote_Beastmaster_11_Chicken_Dance", "Chicken Dance"},

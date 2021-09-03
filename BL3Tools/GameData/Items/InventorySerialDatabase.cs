@@ -237,8 +237,14 @@ namespace BL3Tools.GameData.Items {
             var parts = ((JArray)InventoryDatabase[invKey]["assets"]).Children().Select(x => x.Value<string>()).ToList();
             return parts;
         }
-
-        public static List<string> GetValidPartsForParts(string category, List<string> parts, bool bShortName = true) {
+        /// <summary>
+        /// Returns a list of valid parts for the item in <paramref name="category"/>, with parts like <paramref name="parts"/>
+        /// <para>This uses a dictionary of part name to dependencies/excluders; It will exclude any parts included in the excluders</para>
+        /// </summary>
+        /// <param name="category">The category of the item/weapon which the parts are for</param>
+        /// <param name="parts">A list of parts to get the valid resulting parts of</param>
+        /// <returns>A list of all of the valid parts;</returns>
+        public static List<string> GetValidPartsForParts(string category, List<string> parts) {
             var allParts = GetPartsForInvKey(category);
             foreach(string part in parts) {
                 if (!PartDatabase.ContainsKey(part)) continue;
@@ -249,6 +255,30 @@ namespace BL3Tools.GameData.Items {
                 allParts.RemoveAll(x => excluders.Contains(x));
             }
             return allParts;
+        }
+
+        /// <summary>
+        /// Gets a list of dependencies for a given part
+        /// <para>A dependency means that in order for this part to appear in an item legitimately; The item <b>must</b> contain the returned parts</para>
+        /// </summary>
+        /// <param name="part">A full part name for which to get the dependencies</param>
+        /// <returns>A list of all of the dependent parts</returns>
+        public static List<string> GetDependenciesForPart(string part) {
+            if (!PartDatabase.ContainsKey(part)) return null;
+            var dict = PartDatabase[part];
+            return dict["Dependencies"];
+        }
+
+        /// <summary>
+        /// Gets a list of excluders for a given part
+        /// <para>An excluder means that in order for <paramref name="part"/> to appear in an item legitimately; The item <b>must not</b> contain the returned parts</para>
+        /// </summary>
+        /// <param name="part">A full part name for which to get the excluders of</param>
+        /// <returns>A list of all of the excluded parts</returns>
+        public static List<string> GetExcludersForPart(string part) {
+            if (!PartDatabase.ContainsKey(part)) return null;
+            var dict = PartDatabase[part];
+            return dict["Excluders"];
         }
 
         /// <summary>
