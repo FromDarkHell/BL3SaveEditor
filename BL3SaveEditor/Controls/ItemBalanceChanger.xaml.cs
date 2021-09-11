@@ -85,7 +85,7 @@ namespace BL3SaveEditor.Controls {
             if (!IsStarted) return;
 
             var box = (ComboBox)sender;
-            if (box.SelectedItem == null) {
+            if (box.SelectedItem == null && Balances != null) {
                 box.SelectedIndex = 0;
                 SelectedBalance = Balances.SourceCollection.OfType<string>().FirstOrDefault();
             }

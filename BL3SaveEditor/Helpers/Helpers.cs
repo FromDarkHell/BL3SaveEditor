@@ -40,6 +40,39 @@ namespace BL3SaveEditor.Helpers {
         }
     }
 
+    public class AndConverter : IMultiValueConverter {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) {
+            if (values.Any(v => ReferenceEquals(v, DependencyProperty.UnsetValue)))
+                return DependencyProperty.UnsetValue;
+            values = values.Select(x => {
+                if (x is string && x != null) return true;
+                else if (x is string && x == null) return false;
+                return x;
+            }).ToArray();
+
+            return values.All(System.Convert.ToBoolean);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class IntegerLimiterConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            int limit = System.Convert.ToInt32(parameter);
+            int? val = value as int?;
+
+            if (val == null) return false;
+            
+            return val < limit;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotSupportedException();
+        }
+    }
+
     #region Specialized Converters
     public class EXPointToLevelConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {

@@ -38,6 +38,9 @@
         <helpers:IntegerToMayhemLevelConverter x:Key="IntegerToMayhemLevelConverter1" />
         <helpers:ChallengeToBooleanConverter x:Key="ChallengeToBooleanConverter1" />
         <helpers:ItemSlotConverter x:Key="ItemSlotConverter1" />
+
+        <helpers:AndConverter x:Key="AndConverter1" />
+        <helpers:IntegerLimiterConverter x:Key="IntegerLimiterConverter1" />
     </Window.Resources>
 
     <adonisControls:AdonisWindow.TitleBarContent>
@@ -56,7 +59,7 @@
         <ToolBar x:Uid="ToolWindowToolbar" AllowDrop="False" Focusable="False" HorizontalAlignment="Left"
                 VerticalAlignment="Top" Width="792"
                 Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" Height="30">
-            <Button Name="NewSaveBtn" Click="NewSaveBtn_Click">
+            <Button Visibility="Collapsed" Name="NewSaveBtn" Click="NewSaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="16" Height="16" Source="Icons\fugue\document-binary.png" Margin="0 0 5 0"
                             RenderOptions.BitmapScalingMode="Fant" />
@@ -627,7 +630,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
                                             Margin="0,10,10,0" VerticalAlignment="Top" Height="16"
-                                            Content="{Binding Path=SelectedSerial.Parts.Count}"
+                                            Content="{Binding Path=SelectedSerial.Parts.Count}" Name="PartsLabel"
                                             ContentStringFormat="Parts ({0}/63)">
 
                                     </Label>
@@ -675,8 +678,15 @@
                                             IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                     <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right"
                                             Margin="0,0,202,10" VerticalAlignment="Bottom" Width="68" Height="24"
-                                            Grid.Column="0" Click="AddItemPartBtn_Click"
-                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
+                                            Grid.Column="0" Click="AddItemPartBtn_Click">
+                                        <Button.IsEnabled>
+                                            <MultiBinding Converter="{StaticResource AndConverter1}">
+                                                <Binding Path="SelectedSerial.InventoryKey" TargetNullValue="False" />
+                                                <Binding Path="SelectedSerial.Parts.Count"
+                                                        Converter="{StaticResource IntegerLimiterConverter1}" ConverterParameter="63" />
+                                            </MultiBinding>
+                                        </Button.IsEnabled>
+                                    </Button>
 
                                     <Grid Margin="10,31,0,39" Grid.Column="1" HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
@@ -724,12 +734,20 @@
                                             IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
                                     <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right"
                                             Margin="0,0,192,10" VerticalAlignment="Bottom" Width="68" Height="24"
-                                            Grid.Column="1" Click="AddItemPartBtn_Click"
-                                            IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
+                                            Grid.Column="1" Click="AddItemPartBtn_Click">
+                                        <Button.IsEnabled>
+                                            <MultiBinding Converter="{StaticResource AndConverter1}">
+                                                <Binding Path="SelectedSerial.InventoryKey" TargetNullValue="False" />
+                                                <Binding Path="SelectedSerial.GenericParts.Count"
+                                                        Converter="{StaticResource IntegerLimiterConverter1}"
+                                                        ConverterParameter="15" />
+                                            </MultiBinding>
+                                        </Button.IsEnabled>
+                                    </Button>
                                     <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
                                             Margin="10,10,0,0" VerticalAlignment="Top" Height="16" Grid.Column="1"
-                                            Content="{Binding Path=SelectedSerial.GenericParts.Count}"
-                                            ContentStringFormat="Parts ({0}/15)" />
+                                            Content="{Binding Path=SelectedSerial.GenericParts.Count}" Name="GenericPartsLabel"
+                                            ContentStringFormat="Generic Parts ({0}/15)" />
 
                                 </Grid>
 
@@ -806,7 +824,8 @@
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="LockRoomDeco_Click" />
 
                             <Button Content="Unlock Customizations" Margin="244,0,0,55" HorizontalAlignment="Left"
-                                    Width="155" Height="30" VerticalAlignment="Bottom" Click="LockRoomDeco_Click" />
+                                    Width="155" Height="30" VerticalAlignment="Bottom"
+                                    Click="UnlockCustomizations_Click" />
                             <Button Content="Lock Decorations" Margin="244,0,0,20" HorizontalAlignment="Left"
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="LockCustomizations_Click" />
                         </Grid>

@@ -26,7 +26,7 @@
                 HorizontalAlignment="Stretch" Margin="75,60,10,0" VerticalAlignment="Top" />
         <Button Content="Save" Name="SaveBtn" Click="SaveBtn_Click" HorizontalAlignment="Right" Margin="0,0,102,13"
                 VerticalAlignment="Bottom" Width="89" />
-        <Button Content="Exit" Name="ExitBtn" Click="ExitBtn_Click" HorizontalAlignment="Right" Margin="0,0,10,13"
+        <Button Content="Cancel" Name="ExitBtn" Click="ExitBtn_Click" HorizontalAlignment="Right" Margin="0,0,10,13"
                 VerticalAlignment="Bottom" Width="75" />
 
     </Grid>

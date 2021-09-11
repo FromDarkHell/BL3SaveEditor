@@ -23,6 +23,7 @@ using System.Windows.Navigation;
 using System.Diagnostics;
 
 namespace BL3SaveEditor {
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -274,7 +275,7 @@ namespace BL3SaveEditor {
 
         #region Toolbar Interaction
         private void NewSaveBtn_Click(object sender, RoutedEventArgs e) {
-            Console.WriteLine("Made a new save!");
+            Console.WriteLine("New save made...");
         }
 
         private void OpenSaveBtn_Click(object sender, RoutedEventArgs e) {
@@ -532,6 +533,21 @@ namespace BL3SaveEditor {
             var grid = ((Grid)FindName("SerialContentsGrid"));
             grid.DataContext = null;
             grid.DataContext = this;
+
+            var partsLabel = ((Label)FindName("PartsLabel"));
+            partsLabel.DataContext = null;
+            partsLabel.DataContext = this;
+            partsLabel = ((Label)FindName("GenericPartsLabel"));
+            partsLabel.DataContext = null;
+            partsLabel.DataContext = this;
+
+            var addPartBtn = ((Button)FindName("GenericPartsAddBtn"));
+            addPartBtn.DataContext = null;
+            addPartBtn.DataContext = this;
+            addPartBtn = ((Button)FindName("PartsAddBtn"));
+            addPartBtn.DataContext = null;
+            addPartBtn.DataContext = this;
+
         }
         private void IntegerUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
             if (e.NewValue == null || e.OldValue == null) return;
@@ -676,6 +692,9 @@ namespace BL3SaveEditor {
                 }
 
                 saveGame.InventoryItems.RemoveAt(indx);
+                if (saveGame.InventoryItems.Count <= 0) {
+                    SelectedSerial = null;
+                }
             }
 
             BackpackListView.ItemsSource = null;
@@ -723,6 +742,7 @@ namespace BL3SaveEditor {
             ValidGenerics.Refresh();
 
             obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
+            RefreshBackpackView();
         }
         private void DeleteItemPartBtn_Click(object sender, RoutedEventArgs e) {
             var btn = (Button)sender;
@@ -761,6 +781,7 @@ namespace BL3SaveEditor {
             ValidGenerics.Refresh();
 
             obj.GetBindingExpression(ListView.ItemsSourceProperty).UpdateTarget();
+            RefreshBackpackView();
         }
 
         // This bit of logic is here so that way the ListView's selected value stays up to date with the combobox's selected value :/
@@ -884,16 +905,59 @@ namespace BL3SaveEditor {
         // TODO: Implement customization unlockers
 
         private void UnlockRoomDeco_Click(object sender, RoutedEventArgs e) {
-            
+            List<string> decos = DataPathTranslations.decoAssetPaths.Keys.ToList();
+            foreach(string assetPath in decos) {
+                // Only add asset paths that we don't already have unlocked
+                if(!profile.Profile.UnlockedCrewQuartersDecorations.Any(x => x.DecorationItemAssetPath.Equals(assetPath))) {
+                    var d = new OakSave.CrewQuartersDecorationItemSaveGameData() {
+                        DecorationItemAssetPath = assetPath,
+                        IsNew = true
+                    };
+                    profile.Profile.UnlockedCrewQuartersDecorations.Add(d);
+                    Console.WriteLine("Profile doesn't contain room deco: {0}", assetPath);
+                }
+            }
         }
         private void UnlockCustomizations_Click(object sender, RoutedEventArgs e) {
-           
-        }
-        private void LockRoomDeco_Click(object sender, RoutedEventArgs e) {
+            List<string> customizations = new List<string>();
+            customizations.AddRange(DataPathTranslations.headAssetPaths.Keys.ToList());
+            customizations.AddRange(DataPathTranslations.skinAssetPaths.Keys.ToList());
+            customizations.AddRange(DataPathTranslations.echoAssetPaths.Keys.ToList());
 
+            foreach(string assetPath in customizations) {
+                string lowerAsset = assetPath.ToLower();
+                if (lowerAsset.Contains("default") || (lowerAsset.Contains("emote") && (lowerAsset.Contains("wave") || lowerAsset.Contains("cheer") || lowerAsset.Contains("laugh") || lowerAsset.Contains("point")))) continue;
+
+                if (!profile.Profile.UnlockedCustomizations.Any(x => x.CustomizationAssetPath.Equals(assetPath))) {
+                    var d = new OakSave.OakCustomizationSaveGameData {
+                        CustomizationAssetPath = assetPath,
+                        IsNew = true
+                    };
+                    profile.Profile.UnlockedCustomizations.Add(d);
+                    Console.WriteLine("Profile doesn't contain customization: {0}", assetPath);
+                }
+            }
+
+            List<uint> assetHashes = new List<uint>();
+            assetHashes.AddRange(DataPathTranslations.weaponSkinHashes);
+            assetHashes.AddRange(DataPathTranslations.trinketHashes);
+            foreach (uint assetHash in assetHashes) {
+                if(!profile.Profile.UnlockedInventoryCustomizationParts.Any(x => x.CustomizationPartHash == assetHash)) {
+                    profile.Profile.UnlockedInventoryCustomizationParts.Add(new OakSave.OakInventoryCustomizationPartInfo {
+                        CustomizationPartHash = assetHash,
+                        IsNew = true
+                    });
+                }
+            }
+        }
+
+        private void LockRoomDeco_Click(object sender, RoutedEventArgs e) {
+            // Remove all of the customizations in order to "lock" them.
+            profile.Profile.UnlockedCrewQuartersDecorations.Clear();
         }
         private void LockCustomizations_Click(object sender, RoutedEventArgs e) {
-
+            profile.Profile.UnlockedCustomizations.Clear();
+            profile.Profile.UnlockedInventoryCustomizationParts.Clear();
         }
         #endregion
 
