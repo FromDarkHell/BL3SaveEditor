@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BL3SaveEditor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Borderlands 3 Save Editor")]
+[assembly: AssemblyDescription("A save and profile editor for Borderlands 3")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("BL3SaveEditor")]
+[assembly: AssemblyCompany("FromDarkHell")]
+[assembly: AssemblyProduct("Borderlands 3 Save Editor")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -53,3 +53,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: NeutralResourcesLanguage("en-US")]
