@@ -1,4 +1,4 @@
--## Borderlands 3 Save Editor
+## Borderlands 3 Save Editor
 A desktop based save *and* profile editor for [Borderlands 3](borderlands.com/).
 
 ### Installation / Usage
@@ -12,7 +12,7 @@ A desktop based save *and* profile editor for [Borderlands 3](borderlands.com/).
 ### Credits
 * [gibbed](https://github.com/Gibbed) for their [Inventory Serial Number Database](https://github.com/gibbed/Borderlands3Dumps). It's what allows me to know what weapons you've got in your backpack! I also use their [Borderlands3Protos](https://github.com/gibbed/Borderlands3Protos) repository 
 * [apocalyptech](https://github.com/apocalyptech/) for writing the incredibly helpful [guide](https://github.com/BLCM/BLCMods/wiki/Understanding-BL3-Item-Serial-Numbers) on parsing weapon serials.
-* [Benjamin Rühl](https://github.com/benruehl) for creating [AdonisUI](https://github.com/benruehl/adonis-ui), the WPF toolkit I used for most of my UI development/theming.
+* [Benjamin Rï¿½hl](https://github.com/benruehl) for creating [AdonisUI](https://github.com/benruehl/adonis-ui), the WPF toolkit I used for most of my UI development/theming.
 * [xceed software](https://github.com/xceedsoftware) for creating the [Extended WPF Toolkit](https://github.com/xceedsoftware/wpftoolkit), allowing me to have a `Raw` tab and number up/downs.
 * [Gearbox Software](https://www.gearboxsoftware.com/) of course for creating Borderlands 3.
 * Many others who helped test the editor as well as help me get my mind around some of the concepts.

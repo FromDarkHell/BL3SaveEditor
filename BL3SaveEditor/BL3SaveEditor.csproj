@@ -41,6 +41,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Single File|AnyCPU'">
     <OutputPath>bin\Single File\</OutputPath>
+    <DefineConstants>SINGLE_FILE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

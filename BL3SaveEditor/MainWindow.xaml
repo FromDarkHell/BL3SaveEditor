@@ -59,6 +59,7 @@
         <ToolBar x:Uid="ToolWindowToolbar" AllowDrop="False" Focusable="False" HorizontalAlignment="Left"
                 VerticalAlignment="Top" Width="792"
                 Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" Height="30">
+            <!-- I'm hiding this button for now because I find it to be a pain to work on -->
             <Button Visibility="Collapsed" Name="NewSaveBtn" Click="NewSaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
                     <Image Width="16" Height="16" Source="Icons\fugue\document-binary.png" Margin="0 0 5 0"

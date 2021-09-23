@@ -985,9 +985,16 @@ namespace BL3SaveEditor {
 
                     if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
                         try {
+// Change what we're doing depending on whether or not we're built in single file or "release" (distributed as a zip).
+#if SINGLE_FILE
                             if (AutoUpdater.DownloadUpdate(args)) {
                                 Application.Current.Shutdown();
                             }
+#else
+                            // The non-single file releases can't really be updated the way I want them to.
+                            // For now we're gonna just send the user to the github page.
+                            System.Diagnostics.Process.Start(args.ChangelogURL);
+#endif
                         }
                         catch (Exception exception) {
                             MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
