@@ -6,10 +6,10 @@
         xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" mc:Ignorable="d"
-        Title="Borderlands 3 Save Editor" Height="612" Width="859"
-        Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True"
-        Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" mc:Ignorable="d" Title="Borderlands 3 Save Editor"
+        Height="612" Width="859" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}"
+        UseLayoutRounding="True" Closed="AdonisWindow_Closed"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.Style>
         <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}" />
     </Window.Style>
@@ -583,9 +583,10 @@
                                 <CheckBox Content="Force Legit Parts" HorizontalAlignment="Left" Margin="10,147,0,0"
                                         VerticalAlignment="Top" Width="108"
                                         DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
-                                        IsChecked="{Binding Path=ForceLegitParts, Mode=TwoWay}" Name="ForceLegitPartsChkBox" />
+                                        IsChecked="{Binding Path=ForceLegitParts, Mode=TwoWay}"
+                                        Name="ForceLegitPartsChkBox" />
                                 <Grid HorizontalAlignment="Stretch" Margin="10,168,0,0" Background="Transparent"
-                                        VerticalAlignment="Stretch" >
+                                        VerticalAlignment="Stretch">
                                     <Grid.Resources>
 
                                         <helpers:SerialPartConverter x:Key="MainPartConverter1" />
@@ -684,7 +685,8 @@
                                             <MultiBinding Converter="{StaticResource AndConverter1}">
                                                 <Binding Path="SelectedSerial.InventoryKey" TargetNullValue="False" />
                                                 <Binding Path="SelectedSerial.Parts.Count"
-                                                        Converter="{StaticResource IntegerLimiterConverter1}" ConverterParameter="63" />
+                                                        Converter="{StaticResource IntegerLimiterConverter1}"
+                                                        ConverterParameter="63" />
                                             </MultiBinding>
                                         </Button.IsEnabled>
                                     </Button>
@@ -747,8 +749,8 @@
                                     </Button>
                                     <Label HorizontalContentAlignment="Center" HorizontalAlignment="Stretch"
                                             Margin="10,10,0,0" VerticalAlignment="Top" Height="16" Grid.Column="1"
-                                            Content="{Binding Path=SelectedSerial.GenericParts.Count}" Name="GenericPartsLabel"
-                                            ContentStringFormat="Generic Parts ({0}/15)" />
+                                            Content="{Binding Path=SelectedSerial.GenericParts.Count}"
+                                            Name="GenericPartsLabel" ContentStringFormat="Generic Parts ({0}/15)" />
 
                                 </Grid>
 
@@ -902,10 +904,12 @@
                         <LineBreak />
                         <Run Text="Thanks to: " />
                         <LineBreak />
-                        <Run Text="- Gibbed, apocalyptech, raptor/cfi2017, c0dycode, apple1417, LostInCompression, DOMIN8" />
+                        <Run
+                                Text="- Gibbed, apocalyptech, raptor/cfi2017, c0dycode, apple1417, LostInCompression, DOMIN8" />
                         <LineBreak />
                         <Run Text="Extra special thanks to" />
-                        <Hyperlink TextDecorations="Underline" NavigateUri="https://www.deviantart.com/brokennoah/art/Borderlands-3-icons-797030087">
+                        <Hyperlink TextDecorations="Underline"
+                                NavigateUri="https://www.deviantart.com/brokennoah/art/Borderlands-3-icons-797030087">
                             <Run Text="BrokenNoah" />
                         </Hyperlink>
                         <Run Text="for making the main icon of this program!" />
@@ -952,11 +956,13 @@
                         <Run Foreground="MediumPurple" Text="In memory of Baysix. Fly high." />
                     </TextBlock>
                     <Button Content="Check For Updates" VerticalAlignment="Top" HorizontalAlignment="Right"
-                            Margin="0,0,6,0" Width="120" />
+                            Margin="0,22,6,0" Width="120" />
                     <CheckBox Name="DarkModeBox" Content="Enable Dark Mode" HorizontalAlignment="Right"
-                            Margin="0,30,6,0" VerticalAlignment="Top" RenderTransformOrigin="1.014,-0.938"
-                            IsChecked="True" Height="20" Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked"
-                            Width="120" />
+                            Margin="0,51,6,0" VerticalAlignment="Top" IsChecked="True" Height="20"
+                            Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked" Width="120" />
+                    <Label VerticalAlignment="Top" HorizontalAlignment="Right" FontWeight="Normal"
+                            Content="{Binding Path=Version, Mode=OneTime}" ContentStringFormat="Version: {0}"
+                            Width="120" Margin="0,0,6,0" Height="16" />
                 </Grid>
             </TabItem>
         </TabControl>

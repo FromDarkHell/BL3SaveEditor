@@ -147,9 +147,8 @@ namespace BL3Tools.GameData.Items {
         /// <param name="serial">BL3(...) encoded serial</param>
         /// <returns>An object representing the passed in <paramref name="serial"/></returns>
         public static Borderlands3Serial DecryptSerial(string serial) {
-            if (serial.StartsWith("BL3(") && serial.EndsWith(")"))
+            if (serial.ToLower().StartsWith("bl3(") && serial.EndsWith(")"))
                 serial = serial.Remove(0, 4).Remove(serial.Length - 5);
-
             return DecryptSerial(Convert.FromBase64String(serial));
         }
 

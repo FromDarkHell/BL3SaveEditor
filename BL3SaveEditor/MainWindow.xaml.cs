@@ -21,6 +21,7 @@ using System.IO;
 using AutoUpdaterDotNET;
 using System.Windows.Navigation;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace BL3SaveEditor {
 
@@ -30,6 +31,9 @@ namespace BL3SaveEditor {
     public partial class MainWindow {
 
         #region Databinding Data
+
+        public static string Version { get; private set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
         public static RoutedCommand DuplicateCommand { get; } = new RoutedCommand();
         public static RoutedCommand DeleteCommand { get; } = new RoutedCommand();
 
@@ -620,6 +624,11 @@ namespace BL3SaveEditor {
                 Console.WriteLine($"Exception ({message}) parsing serial: {ex.ToString()}");
                 if (ex.knowCause)
                     MessageBox.Show($"Error parsing serial: {ex.Message}", "Serial Parse Exception", AdonisUI.Controls.MessageBoxButton.OK, AdonisUI.Controls.MessageBoxImage.Error);
+            }
+            catch(Exception ex) {
+                string message = ex.Message;
+                Console.WriteLine($"Exception ({message}) parsing serial: {ex.ToString()}");
+                MessageBox.Show($"Error parsing serial: {ex.Message}", "Serial Parse Exception", AdonisUI.Controls.MessageBoxButton.OK, AdonisUI.Controls.MessageBoxImage.Error);
             }
         }
         private void SyncEquippedBtn_Click(object sender, RoutedEventArgs e) {
