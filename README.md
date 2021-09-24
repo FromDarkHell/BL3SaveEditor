@@ -5,7 +5,7 @@ A desktop based save _and_ profile editor for [Borderlands 3](borderlands.com/).
 ### Installation / Usage
 
 1. Download the exe/zip for your respective OS/setup available on the [Releases](https://github.com/FromDarkHell/BL3SaveEditor/releases) tab.
-   - _Which one do I download?_ If you don't know which one to download, you probably will want to download `BL3SaveEditor.exe`<sup>[here](https://github.com/FromDarkHell/BL3SaveEditor/releases/latest/download/BL3SaveEditor.exe)</sup>. This is a self-contained windows binary. If that one doesn't launch for you, try downloading `BL3SaveEditor.zip`<sup>[here](https://github.com/FromDarkHell/BL3SaveEditor/releases/latest/download/BL3SaveEditor.zip)</sup>.
+   - _Which one do I download?_ If you don't know which one to download, you probably will want to download `BL3SaveEditor-Portable.zip`<sup>[here](https://github.com/FromDarkHell/BL3SaveEditor/releases/latest/download/BL3SaveEditor-Portable.zip)</sup>. This is a self-contained windows binary. If that one doesn't launch for you, try downloading `BL3SaveEditor.zip`<sup>[here](https://github.com/FromDarkHell/BL3SaveEditor/releases/latest/download/BL3SaveEditor.zip)</sup>.
 2. Then you download / run the exe
 3. Click `Open`, then you can select either a profile (`profile.sav`) or a game save (`[NUMBERS].sav`).
 4. You can now edit your profile or game save to your hearts content!

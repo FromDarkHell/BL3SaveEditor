@@ -273,8 +273,6 @@ namespace BL3SaveEditor {
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
 
             #if !DEBUG
-            AutoUpdater.ReportErrors = true;
-            AutoUpdater.RunUpdateAsAdmin = true;
             AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
             #endif
         }
