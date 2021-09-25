@@ -241,6 +241,8 @@ namespace BL3SaveEditor {
         public int MaximumLostLootSDUs { get { return SDU.MaximumLostLoot;  } }
         #endregion
 
+        private static string UpdateURL = "https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml";
+
         private static Debug.DebugConsole dbgConsole;
         private bool bLaunched = false;
 
@@ -253,6 +255,7 @@ namespace BL3SaveEditor {
         /// The current save game object; will be null if we loaded a profile instead of a save game
         /// </summary>
         public BL3Save saveGame { get; set; } = null;
+
 
         public MainWindow() {
             this.profile = null;
@@ -272,9 +275,9 @@ namespace BL3SaveEditor {
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
 
-            #if !DEBUG
-            AutoUpdater.Start("https://raw.githubusercontent.com/FromDarkHell/BL3SaveEditor/main/BL3SaveEditor/AutoUpdater.xml");
-            #endif
+#if !DEBUG
+            AutoUpdater.Start(UpdateURL);
+#endif
         }
 
         #region Toolbar Interaction
@@ -289,9 +292,14 @@ namespace BL3SaveEditor {
                 InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames")
             };
 
-            if (fileDialog.ShowDialog() == true) {
-                object saveObj = BL3Tools.BL3Tools.LoadFileFromDisk(fileDialog.FileName);
+            if (fileDialog.ShowDialog() == true)
+                OpenSave(fileDialog.FileName);
+        }
 
+        private void OpenSave(string filePath) {
+            try {
+                // Reload the save just for safety, this way we're getting the "saved" version on a save...
+                object saveObj = BL3Tools.BL3Tools.LoadFileFromDisk(filePath);
                 Console.WriteLine($"Reading a save of type: {saveObj.GetType()}");
 
                 if (saveObj.GetType() == typeof(BL3Profile)) {
@@ -304,21 +312,27 @@ namespace BL3SaveEditor {
                     profile = null;
                     bSaveLoaded = true;
                 }
-            }
 
             ((TabItem)FindName("RawTabItem")).IsEnabled = true;
-            ((TabItem)FindName("InventoryTabItem")).IsEnabled = true;
+                ((TabItem)FindName("InventoryTabItem")).IsEnabled = true;
 
-            ((Button)FindName("SaveSaveBtn")).IsEnabled = true;
-            ((Button)FindName("SaveAsSaveBtn")).IsEnabled = true;
+                ((Button)FindName("SaveSaveBtn")).IsEnabled = true;
+                ((Button)FindName("SaveAsSaveBtn")).IsEnabled = true;
 
-            // Refresh the bindings on the GUI
-            DataContext = null;
-            DataContext = this;
+                // Refresh the bindings on the GUI
+                DataContext = null;
+                DataContext = this;
 
-            BackpackListView.ItemsSource = null;
-            BackpackListView.ItemsSource = SlotItems;
-            RefreshBackpackView();
+                BackpackListView.ItemsSource = null;
+                BackpackListView.ItemsSource = SlotItems;
+                RefreshBackpackView();
+            }
+            catch(Exception ex) {
+                Console.WriteLine("Failed to load save ({0}) :: {1}", filePath, ex.Message);
+                Console.WriteLine(ex.StackTrace);
+
+                MessageBox.Show($"Error parsing save: {ex.Message}", "Save Parse Exception", AdonisUI.Controls.MessageBoxButton.OK, AdonisUI.Controls.MessageBoxImage.Error);
+            }
         }
 
         private void SaveOpenedFile() {
@@ -329,9 +343,9 @@ namespace BL3SaveEditor {
                 InjectGuardianRank(saveFiles.EnumerateFiles("*.sav").Select(x => x.FullName).ToArray());
             }
 
-            // Refresh data context for safety
-            DataContext = null;
-            DataContext = this;
+#if DEBUG
+            OpenSave(saveGame == null ? profile.filePath : saveGame.filePath);
+#endif
         }
 
         private void SaveSaveBtn_Click(object sender, RoutedEventArgs e) {
@@ -474,6 +488,13 @@ namespace BL3SaveEditor {
 
         #endregion
 
+        #region Character
+        private void CharacterClass_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            var str = e.AddedItems.OfType<string>().FirstOrDefault();
+            if (str == null || str == default) return;
+        }
+        #endregion
+
         #region Fast Travel
         private void DbgMapBox_StateChange(object sender, RoutedEventArgs e) {
             VisitedTeleportersGrpBox.DataContext = null;
@@ -607,6 +628,10 @@ namespace BL3SaveEditor {
             try {
                 Borderlands3Serial item = Borderlands3Serial.DecryptSerial(serialCode);
                 if (item == null) return;
+
+                // Since we've added a new item, set the original data to null...
+                item.OriginalData = null;
+
 
                 if (profile == null) saveGame.InventoryItems.Add(item);
                 else profile.BankItems.Add(item);
@@ -848,6 +873,12 @@ namespace BL3SaveEditor {
         #endregion
 
         #region Profile
+        /// <summary>
+        /// When modifying a profile (specifically guardian rank), the saves also store data about the guardian rank in case a profile gets corrupted.
+        /// We need to modify *all* of these save's guardian ranks just to be safe.
+        /// This was way more of an issue in earlier releases of BL3 but we're keeping to be safe.
+        /// </summary>
+        /// <param name="files">A list of all of the save files to modify / inject into</param>
         private void InjectGuardianRank(string[] files) {
             foreach (string file in files) {
                 try {
@@ -994,16 +1025,13 @@ namespace BL3SaveEditor {
 
                     if (result.Equals(MessageBoxResult.Yes) || result.Equals(MessageBoxResult.OK)) {
                         try {
-// Change what we're doing depending on whether or not we're built in single file or "release" (distributed as a zip).
-#if SINGLE_FILE
+#if !SINGLE_FILE
+                            // Change what we're doing depending on whether or not we're built in single file (1 exe in a zip) or "release" (distributed as a zip with multiple files & folders).
+                            args.DownloadURL = args.DownloadURL.Replace("-Portable", "");
+#endif
                             if (AutoUpdater.DownloadUpdate(args)) {
                                 Application.Current.Shutdown();
                             }
-#else
-                            // The non-single file releases can't really be updated the way I want them to.
-                            // For now we're gonna just send the user to the github page.
-                            System.Diagnostics.Process.Start(args.ChangelogURL);
-#endif
                         }
                         catch (Exception exception) {
                             MessageBox.Show(exception.Message, exception.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
@@ -1019,6 +1047,10 @@ namespace BL3SaveEditor {
                     MessageBox.Show(args.Error.Message, args.Error.GetType().ToString(), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void UpdateButton_Click(object sender, RoutedEventArgs e) {
+            AutoUpdater.Start(UpdateURL);
         }
     }
 }

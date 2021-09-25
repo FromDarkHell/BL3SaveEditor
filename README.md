@@ -2,6 +2,8 @@
 
 A desktop based save _and_ profile editor for [Borderlands 3](borderlands.com/).
 
+![](https://img.shields.io/tokei/lines/github/FromDarkHell/BL3SaveEditor?style=for-the-badge) ![](https://img.shields.io/github/downloads/FromDarkHell/BL3SaveEditor/total?style=for-the-badge)
+
 ### Installation / Usage
 
 1. Download the exe/zip for your respective OS/setup available on the [Releases](https://github.com/FromDarkHell/BL3SaveEditor/releases) tab.

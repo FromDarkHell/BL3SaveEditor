@@ -15940,6 +15940,14 @@
         "Dependencies": [],
         "Excluders": []
     },
+    "/Game/PatchDLC/Steam/Gear/Weapons/SteamGun/Parts/Part_SM_HYP_Barrel_ShortStick.Part_SM_HYP_Barrel_ShortStick": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/Steam/Gear/Weapons/SteamGun/Parts/Part_SM_HYP_Material_ShortStick.Part_SM_HYP_Material_ShortStick": {
+        "Dependencies": [],
+        "Excluders": []
+    },
     "/Game/PatchDLC/Takedown2/Gear/GrenadeMods/Lightspeed/Parts/Part_GM_Aug_Lightspeed.Part_GM_Aug_Lightspeed": {
         "Dependencies": [],
         "Excluders": []

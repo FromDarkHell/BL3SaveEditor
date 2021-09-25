@@ -57,8 +57,8 @@
     </adonisControls:AdonisWindow.TitleBarContent>
     <Grid>
         <ToolBar x:Uid="ToolWindowToolbar" AllowDrop="False" Focusable="False" HorizontalAlignment="Left"
-                VerticalAlignment="Top" Width="792"
-                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" Height="30">
+                VerticalAlignment="Top" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}"
+                Height="30">
             <!-- I'm hiding this button for now because I find it to be a pain to work on -->
             <Button Visibility="Collapsed" Name="NewSaveBtn" Click="NewSaveBtn_Click">
                 <StackPanel Orientation="Horizontal">
@@ -155,7 +155,8 @@
                             <ComboBox IsEnabled="{Binding Path=bSaveLoaded}"
                                     ItemsSource="{Binding Path=ValidPlayerClasses}"
                                     SelectedValue="{Binding Path=saveGame.Character.PlayerClassData, Mode=TwoWay, Converter={StaticResource CharacterClassConverter1}}"
-                                    HorizontalAlignment="Stretch" Margin="155,11,20,0" VerticalAlignment="Top" />
+                                    SelectionChanged="CharacterClass_SelectionChanged" HorizontalAlignment="Stretch"
+                                    Margin="155,11,20,0" VerticalAlignment="Top" />
 
                             <Label FontWeight="Normal" Content="XP Level: " Margin="10,40,0,0"
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
@@ -849,38 +850,44 @@
                     <xctk:LongUpDown Value="{Binding profile.Profile.GuardianRank.NewGuardianExperience, Mode=TwoWay}"
                             HorizontalAlignment="Right" Margin="0,175,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
-                    <Label FontWeight="Normal" Content="Bank SDUs: " HorizontalAlignment="Right" Margin="0,260,309,0"
+                    <Label FontWeight="Normal" Content="Bank SDUs: " HorizontalAlignment="Right" Margin="0,287,309,0"
                             VerticalAlignment="Top" Width="100" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=Bank}"
                             Minimum="0" Maximum="{Binding MaximumBankSDUs}" HorizontalAlignment="Right"
-                            Margin="0,260,10,0" VerticalAlignment="Top" ToolTip="Amount of Bank SDUs on your character"
+                            Margin="0,287,10,0" VerticalAlignment="Top" ToolTip="Amount of Bank SDUs on your character"
                             Width="254" />
 
                     <Label FontWeight="Normal" Content="Lost Loot SDUs: " HorizontalAlignment="Right"
-                            Margin="0,285,309,0" VerticalAlignment="Top" Width="100" Height="20" />
+                            Margin="0,312,309,0" VerticalAlignment="Top" Width="100" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=LostLoot}"
                             Minimum="0" Maximum="{Binding MaximumLostLootSDUs}" HorizontalAlignment="Right"
-                            Margin="0,285,10,0" VerticalAlignment="Top"
+                            Margin="0,312,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of Lost Loot SDUs on your profile" Width="254" />
                     <Label FontWeight="Normal" Content="Citizen Science Bucks: " HorizontalAlignment="Right"
                             Margin="0,210,284,0" VerticalAlignment="Top" Width="125" Height="20" />
                     <xctk:IntegerUpDown Value="{Binding profile.Profile.CitizenScienceCSBucksAmount, Mode=TwoWay}"
                             HorizontalAlignment="Right" Margin="0,210,10,0" VerticalAlignment="Top"
-                            ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
+                            ToolTip="Amount of citizen science dollars you've got" Width="254" />
                     <Label FontWeight="Normal" Content="Golden Keys: " HorizontalAlignment="Right" Margin="0,235,284,0"
                             VerticalAlignment="Top" Width="125" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource KeyToIntegerConverter1}, ConverterParameter=GoldenKeys}"
                             HorizontalAlignment="Right" Margin="0,235,10,0" VerticalAlignment="Top"
-                            ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
-                    <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,320,304,0" Width="105"
+                            ToolTip="Amount of golden keys on your profile" Width="254" />
+                    <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,347,304,0" Width="105"
                             Height="24" VerticalAlignment="Top" Name="ClearLLBtn" Click="ClearLLBtn_Click" />
-                    <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,320,159,0" Width="105"
+                    <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,347,159,0" Width="105"
                             Height="24" VerticalAlignment="Top" Name="ClearBankBtn" Click="ClearBankBtn_Click" />
-                    <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,320,10,0" Width="125"
+                    <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,347,10,0" Width="125"
                             Height="24" VerticalAlignment="Top" Click="InjectGRBtn_Click" />
+                    <Label FontWeight="Normal" Content="Diamond Keys: " HorizontalAlignment="Right" Margin="0,260,284,0"
+                            VerticalAlignment="Top" Width="125" Height="20" />
+                    <xctk:IntegerUpDown
+                            Value="{Binding profile.Profile, ConverterParameter=DiamondKeys, Converter={StaticResource KeyToIntegerConverter1}, Mode=TwoWay}"
+                            HorizontalAlignment="Right" Margin="0,260,10,0" VerticalAlignment="Top"
+                            ToolTip="Amount of diamond keys for your profile" Width="254" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">
@@ -956,7 +963,7 @@
                         <Run Foreground="MediumPurple" Text="In memory of Baysix. Fly high." />
                     </TextBlock>
                     <Button Content="Check For Updates" VerticalAlignment="Top" HorizontalAlignment="Right"
-                            Margin="0,22,6,0" Width="120" />
+                            Margin="0,22,6,0" Width="120" Click="UpdateButton_Click" />
                     <CheckBox Name="DarkModeBox" Content="Enable Dark Mode" HorizontalAlignment="Right"
                             Margin="0,51,6,0" VerticalAlignment="Top" IsChecked="True" Height="20"
                             Checked="DarkModeBox_Checked" Unchecked="DarkModeBox_Checked" Width="120" />

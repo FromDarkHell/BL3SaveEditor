@@ -26,6 +26,7 @@ namespace BL3SaveEditor.Helpers {
             return value;
         }
     }
+
     /// <summary>
     /// A WPF value converter which converts a UInt32 amount of seconds to a TimeSpan (and back and forth)
     /// </summary>
@@ -40,6 +41,9 @@ namespace BL3SaveEditor.Helpers {
         }
     }
 
+    /// <summary>
+    /// A WPF multi-value converter which will only return true if all of the variables passed can be converted ot a bool; and resolve as True.
+    /// </summary>
     public class AndConverter : IMultiValueConverter {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) {
             if (values.Any(v => ReferenceEquals(v, DependencyProperty.UnsetValue)))
@@ -58,6 +62,9 @@ namespace BL3SaveEditor.Helpers {
         }
     }
 
+    /// <summary>
+    /// A WPF value converter which implements a simple limiting function on the passed parameter (as an integer)
+    /// </summary>
     public class IntegerLimiterConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             int limit = System.Convert.ToInt32(parameter);
@@ -74,6 +81,9 @@ namespace BL3SaveEditor.Helpers {
     }
 
     #region Specialized Converters
+    /// <summary>
+    /// A simple WPF converter that converts the EXP points of a player to the specified level
+    /// </summary>
     public class EXPointToLevelConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return PlayerXP.GetLevelForPoints(System.Convert.ToInt32(value));
@@ -83,6 +93,12 @@ namespace BL3SaveEditor.Helpers {
             return PlayerXP.GetPointsForXPLevel(System.Convert.ToInt32(value));
         }
     }
+
+    /// <summary>
+    /// A simple WPF converter that converts the XP level of a player to the specified XP points
+    /// <para></para>
+    /// See also: <seealso cref="EXPointToLevelConverter"/>
+    /// </summary>
     public class LevelToEXPointConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return PlayerXP.GetPointsForXPLevel(System.Convert.ToInt32(value));
@@ -92,6 +108,9 @@ namespace BL3SaveEditor.Helpers {
             return PlayerXP.GetLevelForPoints(System.Convert.ToInt32(value));
         }
     }
+    /// <summary>
+    /// A WPF value converter that converts the player class (<see cref="PlayerClassSaveGameData"/>) to a string based off of the path
+    /// </summary>
     public class StringToCharacterClassConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if (value != null) {
@@ -112,9 +131,11 @@ namespace BL3SaveEditor.Helpers {
             }
             return null;
         }
-
-
     }
+
+    /// <summary>
+    /// A simple WPF value converter which converts the <see cref="CustomPlayerColorSaveGameData"/> struct to a native C# <see cref="Color"/> struct.
+    /// </summary>
     public class CustomPlayerColorToColorConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 
@@ -153,6 +174,10 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
+    
+    /// <summary>
+    /// A simple WPF value converter which converts the passed in customization path to a "human safe" name
+    /// </summary>
     public class CustomizationToStringConverter : IValueConverter {
         private Character chx = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -227,6 +252,10 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
+    
+    /// <summary>
+    /// A WPF value converter which converts the given <c>parameter</c> ("money"/"eridium") to the integer value based off of the stored character in <c>value</c>
+    /// </summary>
     public class CurrencyToIntegerConverter : IValueConverter {
         private Character chx = null;
         private uint currencyHash = 0;
@@ -236,17 +265,11 @@ namespace BL3SaveEditor.Helpers {
                 string param = (string)parameter;
                 chx = (Character)value;
                 switch (param) {
-                    case "golden":
-                        currencyHash = DataPathTranslations.GoldenKeyHash;
-                        break;
                     case "money":
                         currencyHash = DataPathTranslations.MoneyHash;
                         break;
                     case "eridium":
                         currencyHash = DataPathTranslations.EridiumHash;
-                        break;
-                    case "diamond":
-                        currencyHash = DataPathTranslations.DiamondKeyHash;
                         break;
                     default:
                         break;
@@ -277,6 +300,7 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
+
     public class TravelStationConverter : IMultiValueConverter {
         private Character chx = null;
         private bool bShowDbgMaps = false;
@@ -323,6 +347,10 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
+    
+    /// <summary>
+    /// Converts the most active playthrough of the <see cref="Character"/> stored in <c>value</c> to a string (NVHM/TVHM)
+    /// </summary>
     public class PlaythroughToStringConverter : IValueConverter {
         private static readonly string[] indexToString = new string[] {
             "NVHM",
@@ -346,6 +374,10 @@ namespace BL3SaveEditor.Helpers {
             return chx;
         }
     }
+
+    /// <summary>
+    /// Converts guardian rank data to a valid data grid type (<see cref="ObservableCollection{T}"/>
+    /// </summary>
     public class GuardianRankToDataGridConverter : IValueConverter {
         private Profile prf = null;
 
@@ -377,12 +409,15 @@ namespace BL3SaveEditor.Helpers {
             return prf;
         }
     }
+    
     public class KeyToIntegerConverter : IValueConverter {
         private Profile prf = null;
 
         public static Dictionary<string, uint> stringToHash = new Dictionary<string, uint>() {
             { "GoldenKeys", DataPathTranslations.GoldenKeyHash },
-            { "DiamondKeys", DataPathTranslations.DiamondKeyHash }
+            { "DiamondKeys", DataPathTranslations.DiamondKeyHash },
+            { "VaultCard1Keys", DataPathTranslations.VaultCard1Hash },
+            { "VaultCard2Keys", DataPathTranslations.VaultCard2Hash }
         };
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
@@ -446,8 +481,11 @@ namespace BL3SaveEditor.Helpers {
             return prf;
         }
     }
+    
+    /// <summary>
+    /// A WPF converter that returns the first object that is not set to null in the multiple values passed in to the multi-value converter
+    /// </summary>
     public class MultiElementObjectBinder : IMultiValueConverter {
-
         public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture) {
             foreach (object obj in value) {
                 if (obj != null && obj != DependencyProperty.UnsetValue) {
@@ -462,6 +500,7 @@ namespace BL3SaveEditor.Helpers {
             return null;
         }
     }
+
     public class IntegerToMayhemLevelConverter : IValueConverter {
         private Borderlands3Serial serial = null;
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
