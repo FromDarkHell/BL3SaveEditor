@@ -6,10 +6,10 @@
         xmlns:helpers="clr-namespace:BL3SaveEditor.Helpers" xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" mc:Ignorable="d" Title="Borderlands 3 Save Editor"
-        Height="612" Width="859" Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}"
-        UseLayoutRounding="True" Closed="AdonisWindow_Closed"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        xmlns:bl3tools="clr-namespace:BL3Tools;assembly=BL3Tools" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d" Title="Borderlands 3 Save Editor" Height="612" Width="859"
+        Background="{DynamicResource {x:Static adonisUi:Brushes.Layer0BackgroundBrush}}" UseLayoutRounding="True"
+        Closed="AdonisWindow_Closed" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.Style>
         <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}" />
     </Window.Style>
@@ -41,6 +41,12 @@
 
         <helpers:AndConverter x:Key="AndConverter1" />
         <helpers:IntegerLimiterConverter x:Key="IntegerLimiterConverter1" />
+
+        <ObjectDataProvider x:Key="PlatformDataSource" ObjectType="{x:Type bl3tools:Platform}" MethodName="GetValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="bl3tools:Platform" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </Window.Resources>
 
     <adonisControls:AdonisWindow.TitleBarContent>
@@ -106,34 +112,38 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Grid>
-
-                    <Label FontWeight="Normal" Content="Save GUID:" HorizontalAlignment="Left" Margin="10,9,0,0"
-                            VerticalAlignment="Top" />
+                    <Label FontWeight="Normal" Content="Save GUID:" HorizontalAlignment="Left" Margin="10,41,0,0"
+                            VerticalAlignment="Top" Height="24" VerticalContentAlignment="Center" Width="101" />
                     <TextBox Name="GUIDTextBox" IsEnabled="{Binding Path=bSaveLoaded}"
                             Text="{Binding Path=saveGame.Character.SaveGameGuid, Mode=TwoWay}"
-                            HorizontalAlignment="Stretch" Height="25" Margin="116,5,418,0" TextWrapping="Wrap"
+                            HorizontalAlignment="Stretch" Height="25" Margin="116,40,418,0" TextWrapping="Wrap"
                             VerticalAlignment="Top"
                             ToolTip="A randomly generated ID of your save; do not touch unless you know what you're doing" />
                     <Button Content="Randomize" Name="RandomizeGUIDBtn" Click="RandomizeGUIDBtn_Click"
-                            Margin="0,6,328,0" VerticalAlignment="Top" RenderTransformOrigin="2.353,0.208"
+                            Margin="0,41,328,0" VerticalAlignment="Top" RenderTransformOrigin="2.353,0.208"
                             HorizontalAlignment="Right" Width="85"
                             ToolTip="Randomizes the GUID associated with your save" />
 
-                    <Label FontWeight="Normal" Content="Save Game Slot:" HorizontalAlignment="Left" Margin="10,37,0,0"
-                            VerticalAlignment="Top" />
+                    <Label FontWeight="Normal" Content="Save Game Slot:" HorizontalAlignment="Left" Margin="10,70,0,0"
+                            VerticalAlignment="Top" Height="20" Width="101" VerticalContentAlignment="Center" />
                     <xctk:IntegerUpDown IsEnabled="{Binding Path=bSaveLoaded}"
                             Value="{Binding Path=saveGame.Character.SaveGameId, Mode=TwoWay}"
-                            HorizontalAlignment="Stretch" Margin="116,35,328,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Stretch" Margin="116,70,328,0" VerticalAlignment="Top"
                             ToolTip="A number associated with your save; do not touch unless you know what you're doing" />
 
 
 
                     <Label FontWeight="Normal" Content="Total Time Played: " HorizontalAlignment="Left"
-                            Margin="10,70,0,0" VerticalAlignment="Top" />
+                            Margin="10,95,0,0" VerticalAlignment="Top" Height="20" VerticalContentAlignment="Center" />
                     <xctk:TimeSpanUpDown IsEnabled="{Binding Path=bSaveLoaded}"
                             Value="{Binding Path=saveGame.Character.TimePlayedSeconds, Mode=TwoWay, Converter={StaticResource IntegerToSpanConverter1}}"
-                            HorizontalAlignment="Stretch" Margin="116,66,328,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Stretch" Margin="116,95,328,0" VerticalAlignment="Top"
                             ToolTip="Format: Days.Hours:Minutes:Seconds" />
+                    <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Left" Margin="10,10,0,0"
+                            VerticalAlignment="Top" Width="101" Height="25" VerticalContentAlignment="Center" />
+
+                    <ComboBox Margin="116,10,328,458" ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
+                            SelectedValue="{Binding Path=saveGame.Platform}" />
                 </Grid>
             </TabItem>
             <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}">
@@ -547,8 +557,16 @@
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
                                         HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
-                                        ValueChanged="IntegerUpDown_ValueChanged"
-                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
+                                        ValueChanged="IntegerUpDown_ValueChanged">
+                                    <xctk:IntegerUpDown.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource AndConverter1}">
+                                            <Binding Path="SelectedSerial.InventoryKey" TargetNullValue="False" />
+                                            <Binding Path="ValidGenerics.Count"
+                                                    Converter="{StaticResource IntegerLimiterConverter1}"
+                                                    ConverterParameter="0|min" />
+                                        </MultiBinding>
+                                    </xctk:IntegerUpDown.IsEnabled>
+                                </xctk:IntegerUpDown>
                                 <ComboBox ItemsSource="{Binding ValidBalances}"
                                         SelectedValue="{Binding SelectedBalance, Mode=TwoWay}" Margin="115,60,104,0"
                                         VerticalAlignment="Top"
@@ -745,6 +763,9 @@
                                                 <Binding Path="SelectedSerial.GenericParts.Count"
                                                         Converter="{StaticResource IntegerLimiterConverter1}"
                                                         ConverterParameter="15" />
+                                                <Binding Path="ValidGenerics.Count"
+                                                        Converter="{StaticResource IntegerLimiterConverter1}"
+                                                        ConverterParameter="0|min" />
                                             </MultiBinding>
                                         </Button.IsEnabled>
                                     </Button>
@@ -804,7 +825,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Grid Margin="-10,-10,-6,-5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <DataGrid
+                    <DataGrid adonisExtensions:LayerExtension.IncreaseLayer="True"
                             ItemsSource="{Binding Path=profile.Profile, Converter={StaticResource GuardianRankToDataGridConverter1}, Mode=TwoWay}"
                             AutoGenerateColumns="False" Margin="10,10,424,10" VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch">
@@ -819,8 +840,8 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Expander IsExpanded="True" Header="Customizations" Margin="0,10,10,388" HorizontalAlignment="Right"
-                            Width="409">
+                    <Expander IsExpanded="True" Header="Customizations" Margin="0,38,10,360" HorizontalAlignment="Right"
+                            Width="399">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0">
                             <Button Content="Unlock Room Decorations" Margin="0,0,244,55" HorizontalAlignment="Right"
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="UnlockRoomDeco_Click" />
@@ -835,59 +856,63 @@
                         </Grid>
                     </Expander>
                     <xctk:IntegerUpDown Value="{Binding Path=profile.Profile.GuardianRank.AvailableTokens, Mode=TwoWay}"
-                            HorizontalAlignment="Right" Margin="0,125,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,153,10,0" VerticalAlignment="Top"
                             ToolTip="The amount of tokens you have unspent on your profile" Width="254" />
                     <Label FontWeight="Normal" Content="Unspent Tokens: " HorizontalAlignment="Right"
-                            Margin="0,125,304,0" VerticalAlignment="Top" Width="105" Height="20" />
+                            Margin="0,153,304,0" VerticalAlignment="Top" Width="105" Height="20" />
                     <Label FontWeight="Normal" Content="Guardian Rank: " HorizontalAlignment="Right"
-                            Margin="0,150,309,0" VerticalAlignment="Top" Width="100" Height="20" />
+                            Margin="0,178,309,0" VerticalAlignment="Top" Width="100" Height="20" />
 
                     <xctk:IntegerUpDown Value="{Binding Path=profile.Profile.GuardianRank.GuardianRank, Mode=TwoWay}"
-                            HorizontalAlignment="Right" Margin="0,150,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,178,10,0" VerticalAlignment="Top"
                             ToolTip="Guardian Rank associated with your profile" Width="254" />
-                    <Label FontWeight="Normal" Content="Guardian XP: " HorizontalAlignment="Right" Margin="0,175,309,0"
+                    <Label FontWeight="Normal" Content="Guardian XP: " HorizontalAlignment="Right" Margin="0,203,309,0"
                             VerticalAlignment="Top" Width="100" Height="20" />
                     <xctk:LongUpDown Value="{Binding profile.Profile.GuardianRank.NewGuardianExperience, Mode=TwoWay}"
-                            HorizontalAlignment="Right" Margin="0,175,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,203,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of XP associated with your guardian rank level" Width="254" />
-                    <Label FontWeight="Normal" Content="Bank SDUs: " HorizontalAlignment="Right" Margin="0,287,309,0"
+                    <Label FontWeight="Normal" Content="Bank SDUs: " HorizontalAlignment="Right" Margin="0,321,309,0"
                             VerticalAlignment="Top" Width="100" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=Bank}"
                             Minimum="0" Maximum="{Binding MaximumBankSDUs}" HorizontalAlignment="Right"
-                            Margin="0,287,10,0" VerticalAlignment="Top" ToolTip="Amount of Bank SDUs on your character"
+                            Margin="0,321,10,0" VerticalAlignment="Top" ToolTip="Amount of Bank SDUs on your character"
                             Width="254" />
 
                     <Label FontWeight="Normal" Content="Lost Loot SDUs: " HorizontalAlignment="Right"
-                            Margin="0,312,309,0" VerticalAlignment="Top" Width="100" Height="20" />
+                            Margin="0,346,309,0" VerticalAlignment="Top" Width="100" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource SDUConverter1}, ConverterParameter=LostLoot}"
                             Minimum="0" Maximum="{Binding MaximumLostLootSDUs}" HorizontalAlignment="Right"
-                            Margin="0,312,10,0" VerticalAlignment="Top"
+                            Margin="0,346,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of Lost Loot SDUs on your profile" Width="254" />
                     <Label FontWeight="Normal" Content="Citizen Science Bucks: " HorizontalAlignment="Right"
-                            Margin="0,210,284,0" VerticalAlignment="Top" Width="125" Height="20" />
+                            Margin="0,244,284,0" VerticalAlignment="Top" Width="125" Height="20" />
                     <xctk:IntegerUpDown Value="{Binding profile.Profile.CitizenScienceCSBucksAmount, Mode=TwoWay}"
-                            HorizontalAlignment="Right" Margin="0,210,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,244,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of citizen science dollars you've got" Width="254" />
-                    <Label FontWeight="Normal" Content="Golden Keys: " HorizontalAlignment="Right" Margin="0,235,284,0"
+                    <Label FontWeight="Normal" Content="Golden Keys: " HorizontalAlignment="Right" Margin="0,269,284,0"
                             VerticalAlignment="Top" Width="125" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, Mode=TwoWay, Converter={StaticResource KeyToIntegerConverter1}, ConverterParameter=GoldenKeys}"
-                            HorizontalAlignment="Right" Margin="0,235,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,269,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of golden keys on your profile" Width="254" />
-                    <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,347,304,0" Width="105"
+                    <Button Content="Clear Lost Loot" HorizontalAlignment="Right" Margin="0,381,304,0" Width="105"
                             Height="24" VerticalAlignment="Top" Name="ClearLLBtn" Click="ClearLLBtn_Click" />
-                    <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,347,159,0" Width="105"
+                    <Button Content="Clear Bank" HorizontalAlignment="Right" Margin="0,381,159,0" Width="105"
                             Height="24" VerticalAlignment="Top" Name="ClearBankBtn" Click="ClearBankBtn_Click" />
-                    <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,347,10,0" Width="125"
+                    <Button Content="Inject Guardian Rank" HorizontalAlignment="Right" Margin="0,381,10,0" Width="125"
                             Height="24" VerticalAlignment="Top" Click="InjectGRBtn_Click" />
-                    <Label FontWeight="Normal" Content="Diamond Keys: " HorizontalAlignment="Right" Margin="0,260,284,0"
+                    <Label FontWeight="Normal" Content="Diamond Keys: " HorizontalAlignment="Right" Margin="0,294,284,0"
                             VerticalAlignment="Top" Width="125" Height="20" />
                     <xctk:IntegerUpDown
                             Value="{Binding profile.Profile, ConverterParameter=DiamondKeys, Converter={StaticResource KeyToIntegerConverter1}, Mode=TwoWay}"
-                            HorizontalAlignment="Right" Margin="0,260,10,0" VerticalAlignment="Top"
+                            HorizontalAlignment="Right" Margin="0,294,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of diamond keys for your profile" Width="254" />
+                    <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Width="99" Height="26" VerticalContentAlignment="Center" Margin="440,7,0,0" />
+                    <ComboBox ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
+                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,476" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">

@@ -56,7 +56,12 @@ namespace BL3Tools.GameData.Items {
         public List<string> GenericParts { get; set; } = new List<string>();
         public List<int> UnkData1 { get; set; } = new List<int>();
         public int AmountRerolled { get; set; } = 0;
-        public byte[] OriginalData { get; set; } = null;
+
+        /// <summary>
+        /// Used when loading a serial from a save
+        /// This data is automatically set when added to a save
+        /// </summary>
+        public OakSave.OakInventoryItemSaveGameData OriginalData { get; set; } = null;
 
         public string EncryptSerial(uint seed = 0) {
             byte[] data = EncryptSerialToBytes(seed);
@@ -71,7 +76,7 @@ namespace BL3Tools.GameData.Items {
         public byte[] EncryptSerialToBytes(uint seed = 0) {
 
             // Avoid deleting items that we don't know how to parse....
-            if (InventoryKey == null && OriginalData != null) return OriginalData;
+            if (InventoryKey == null && OriginalData != null) return OriginalData.ItemSerialNumber;
 
             ValidateFields();
 
@@ -283,7 +288,7 @@ namespace BL3Tools.GameData.Items {
                 Parts = parts,
                 GenericParts = genericParts,
                 UnkData1 = additionalData,
-                OriginalData = serial
+                OriginalData = null
             };
 
             return serialObject;

@@ -110,6 +110,7 @@
     <Compile Include="GameData\SDU.cs" />
     <Compile Include="GVAS\GVASSave.cs" />
     <Compile Include="Helpers\Helpers.cs" />
+    <Compile Include="Platform.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Save.cs" />
     <Compile Include="TMSUnpack\TMSArchive.cs" />
@@ -127,6 +128,7 @@
     <EmbeddedResource Include="GameData\Items\Mappings\balance_to_inv_data.json" />
     <None Include="GameData\Items\Mappings\README.md" />
     <EmbeddedResource Include="GameData\Items\Mappings\valid_part_database.json" />
+    <EmbeddedResource Include="GameData\Items\Mappings\valid_generics.json" />
     <None Include="GameData\Items\SerialDB\README.md" />
     <EmbeddedResource Include="GameData\Mappings\fast_travel_to_name.json" />
     <None Include="packages.config" />

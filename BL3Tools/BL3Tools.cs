@@ -15,6 +15,7 @@ namespace BL3Tools {
             public class InvalidSaveException : Exception {
                 public InvalidSaveException() : base("Invalid BL3 Save") { }
                 public InvalidSaveException(string saveGameType) : base(String.Format("Invalid BL3 Save Game Type: {0}", saveGameType)) { }
+                public InvalidSaveException(Platform platform) : base(String.Format("Incorrectly decrypted save game using the {0} platform; Are you sure you're using the right one?", platform)) { }
             }
 
 
@@ -39,7 +40,7 @@ namespace BL3Tools {
         /// <param name="filePath">A file path for which to load the file from</param>
         /// <param name="bBackup">Whether or not to backup the save on reading (Default: False)</param>
         /// <returns>An instance of the respective type, all subclassed by a <c>UE3Save</c> instance</returns>
-        public static UE3Save LoadFileFromDisk(string filePath, bool bBackup = false) {
+        public static UE3Save LoadFileFromDisk(string filePath, Platform platform = Platform.PC, bool bBackup = false) {
             UE3Save saveGame = null;
             Console.WriteLine("Reading new file: \"{0}\"", filePath);
             FileStream fs = new FileStream(filePath, FileMode.Open);
@@ -71,18 +72,28 @@ namespace BL3Tools {
                 switch(saveGameType) {
                     // Decrypt a profile
                     case "BP_DefaultOakProfile_C":
-                        ProfileBogoCrypt.Decrypt(buffer, 0, remainingData);
+                        ProfileBogoCrypt.Decrypt(buffer, 0, remainingData, platform);
                         saveGame = new BL3Profile(saveData, Serializer.Deserialize<Profile>(new MemoryStream(buffer)));
+                        (saveGame as BL3Profile).Platform = platform;
                         break;
                     // Decrypt a save game
                     case "OakSaveGame":
-                        SaveBogoCrypt.Decrypt(buffer, 0, remainingData);
+                        SaveBogoCrypt.Decrypt(buffer, 0, remainingData, platform);
                         saveGame = new BL3Save(saveData, Serializer.Deserialize<Character>(new MemoryStream(buffer)));
+                        (saveGame as BL3Save).Platform = platform;
                         break;
                     default:
                         throw new BL3Exceptions.InvalidSaveException(saveGameType);
                 }
-
+            }
+            catch(ProtoBuf.ProtoException ex) {
+                // Typically this exception means that the user didn't properly give in the platform for their save
+                if(ex.Message.StartsWith("Invalid wire-type (7);")) {
+                    throw new BL3Exceptions.InvalidSaveException(platform);
+                }
+                
+                // Raise all other exceptions
+                throw ex;
             }
             finally {
                 // Close the buffer
@@ -134,36 +145,22 @@ namespace BL3Tools {
 
                             Serializer.Serialize(stream, vx.Profile);
                             result = stream.ToArray();
-                            ProfileBogoCrypt.Encrypt(result, 0, result.Length);
+                            ProfileBogoCrypt.Encrypt(result, 0, result.Length, vx.Platform);
                             break;
                         case "OakSaveGame":
                             BL3Save save = (BL3Save)saveGame;
-                            // Unlike the profiles, we can't just remove all of the data from the save's inventory and then readd it
-                            // Saves store other data in the items as well so we can't do that
+                            // Now we've got to update the underlying protobuf data's serial...
                             foreach(Borderlands3Serial serial in save.InventoryItems) {
-                                // If we don't have "original data", just simply the item
-                                if (serial.OriginalData == null) {
-                                    save.Character.InventoryItems.Add(new OakInventoryItemSaveGameData() {
-                                        DevelopmentSaveData = null,
-                                        Flags = 0x00,
-                                        PickupOrderIndex = 8008,
-                                        WeaponSkinPath = "",
-                                        ItemSerialNumber = serial.EncryptSerialToBytes()
-                                    });
+                                var protobufItem = save.Character.InventoryItems.FirstOrDefault(x => ReferenceEquals(x, serial.OriginalData));
+                                if(protobufItem == default) {
+                                    throw new BL3Exceptions.SerialParseException(serial.EncryptSerial(), serial.SerialVersion, serial.SerialDatabaseVersion);
                                 }
-                                else {
-                                    foreach(OakInventoryItemSaveGameData item in save.Character.InventoryItems) {
-                                        if (item.ItemSerialNumber != serial.OriginalData) continue;
-                                        
-                                        item.ItemSerialNumber = serial.EncryptSerialToBytes();
-                                    }
-                                }
+                                protobufItem.ItemSerialNumber = serial.EncryptSerialToBytes();
                             }
-
 
                             Serializer.Serialize(stream, save.Character);
                             result = stream.ToArray();
-                            SaveBogoCrypt.Encrypt(result, 0, result.Length);
+                            SaveBogoCrypt.Encrypt(result, 0, result.Length, save.Platform);
                             break;
                         default:
                             throw new BL3Exceptions.InvalidSaveException(saveGame.GVASData.sgType);

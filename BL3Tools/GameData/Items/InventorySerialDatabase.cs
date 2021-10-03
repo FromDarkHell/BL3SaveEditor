@@ -43,15 +43,26 @@ namespace BL3Tools.GameData.Items {
         /// A <c>JObject</c> representing the valid part database (excluders/dependencies) as loaded from JSON
         /// </summary>
         public static JObject ValidPartDatabase { get; private set; } = null;
+
         /// <summary>
         /// A dictionary mapping a part to it's dependencies / excluders (key in second dictionary)
         /// </summary>
         public static Dictionary<string, Dictionary<string, List<string>>> PartDatabase { get; private set; } = null;
 
+        /// <summary>
+        /// A <c>JObject</c> representing the valid anointment database as loaded from JSON
+        /// </summary>
+        public static JObject ValidGenericDatabase { get; private set; } = null;
+        
+        /// <summary>
+        /// A dictionary mapping a balance to the given list of valid anointments (excludes other parts in validity).
+        /// </summary>
+        public static Dictionary<string, List<string>> GenericsDatabase { get; private set; } = null;
+
         private static readonly string embeddedDatabasePath = "BL3Tools.GameData.Items.SerialDB.Inventory Serial Number Database.json";
         private static readonly string embeddedInvDataDBPath = "BL3Tools.GameData.Items.Mappings.balance_to_inv_data.json";
         private static readonly string embeddedPartDBPath = "BL3Tools.GameData.Items.Mappings.valid_part_database.json";
-
+        private static readonly string embeddedGenericsPath = "BL3Tools.GameData.Items.Mappings.valid_generics.json";
 
         static InventorySerialDatabase() {
             Console.WriteLine("Initializing InventorySerialDatabase...");
@@ -77,6 +88,13 @@ namespace BL3Tools.GameData.Items {
                 string result = reader.ReadToEnd();
 
                 LoadPartDatabase(result);
+            }
+
+            using (Stream stream = me.GetManifestResourceStream(embeddedGenericsPath))
+            using (StreamReader reader = new StreamReader(stream)) {
+                string result = reader.ReadToEnd();
+
+                LoadGenericsDatabase(result);
             }
         }
 
@@ -168,6 +186,8 @@ namespace BL3Tools.GameData.Items {
         /// <param name="shortName">The short name of the part</param>
         /// <returns></returns>
         public static string GetPartFromShortName(string category, string shortName) {
+            if (category == null || shortName == null) return null;
+
             var parts = ((JArray)InventoryDatabase[category]["assets"]).Children().Select(x => x.Value<string>());
             string part = parts.FirstOrDefault(x => x.EndsWith(shortName));
 
@@ -247,6 +267,7 @@ namespace BL3Tools.GameData.Items {
         public static List<string> GetValidPartsForParts(string category, List<string> parts) {
             var allParts = GetPartsForInvKey(category);
             foreach(string part in parts) {
+                if (part == null) continue;
                 if (!PartDatabase.ContainsKey(part)) continue;
 
                 var dict = PartDatabase[part];
@@ -255,6 +276,17 @@ namespace BL3Tools.GameData.Items {
                 allParts.RemoveAll(x => excluders.Contains(x));
             }
             return allParts;
+        }
+
+        /// <summary>
+        /// Gets a list of all of the valid generics for a given balance
+        /// <para>This will need to be filtered further with <see cref="GetValidPartsForParts(string, List{string})"/></para>
+        /// </summary>
+        /// <param name="balance">The given balance of the item</param>
+        /// <returns>A list of all of the valid generics for the given balance</returns>
+        public static List<string> GetValidGenericsForBalance(string balance) {
+            if (!GenericsDatabase.ContainsKey(balance)) return null;
+            return GenericsDatabase[balance];
         }
 
         /// <summary>
@@ -368,6 +400,31 @@ namespace BL3Tools.GameData.Items {
                 Console.WriteLine(ex.StackTrace);
 
                 ValidPartDatabase = originalDB;
+            }
+            return false;
+        }
+        /// <summary>
+        /// Replace the loaded valid anointment database info with the one specified in the JSON string
+        /// </summary>
+        /// <param name="JSONString">A JSON string representing the valid anointment database</param>
+        /// <returns>Whether or not the loading succeeded</returns>
+        public static bool LoadGenericsDatabase(string JSONString) {
+            var originalDB = ValidGenericDatabase;
+            try {
+                ValidGenericDatabase = JObject.FromObject(JsonConvert.DeserializeObject(JSONString));
+                GenericsDatabase = new Dictionary<string, List<string>>();
+                foreach (JProperty token in ValidGenericDatabase.Children<JProperty>()) {
+                    string part = token.Name;
+                    var value = (token.Value as JArray).ToObject<List<string>>();
+                    GenericsDatabase.Add(part, value);
+                }
+                return true;
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+
+                ValidGenericDatabase = originalDB;
             }
             return false;
         }

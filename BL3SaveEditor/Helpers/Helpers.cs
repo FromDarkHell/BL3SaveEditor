@@ -67,12 +67,17 @@ namespace BL3SaveEditor.Helpers {
     /// </summary>
     public class IntegerLimiterConverter : IValueConverter {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            int limit = System.Convert.ToInt32(parameter);
+            var strParam = (parameter as string);
+            string limitingType = "max";
+            if (strParam != null && strParam.Contains("|")) limitingType = strParam.Split('|')[1];
+            
+            string integer = strParam.Split('|')[0];
+            int limit = System.Convert.ToInt32(integer);
             int? val = value as int?;
 
             if (val == null) return false;
             
-            return val < limit;
+            return limitingType == "max" ? val < limit : val > limit;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

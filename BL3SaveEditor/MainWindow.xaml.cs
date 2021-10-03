@@ -31,7 +31,6 @@ namespace BL3SaveEditor {
     public partial class MainWindow {
 
         #region Databinding Data
-
         public static string Version { get; private set; } = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public static RoutedCommand DuplicateCommand { get; } = new RoutedCommand();
@@ -42,7 +41,17 @@ namespace BL3SaveEditor {
         public int maximumMayhemLevel { get; } = MayhemLevel.MaximumLevel;
         public bool bSaveLoaded { get; set; } = false;
         public bool showDebugMaps { get; set; } = false;
-        public bool ForceLegitParts { get; set; } = true;
+
+        private bool _ForceLegitParts = true;
+        public bool ForceLegitParts { 
+            get { return _ForceLegitParts; }
+            set {
+                _ForceLegitParts = value;
+                RefreshBackpackView();
+                ValidParts.Refresh();
+                ValidGenerics.Refresh();
+            }
+        }
 
         public ListCollectionView ValidPlayerClasses { 
             get {
@@ -226,12 +235,30 @@ namespace BL3SaveEditor {
                 if (SelectedSerial == null) return null;
                 List<string> validParts = new List<string>();
 
+                // In this case, balances are what actually restrict the items from their anointments.
+
 
                 // Currently no generic parts actually have any excluders/dependencies
                 // but in the future they might so let's still enforce legit parts on them
                 if (!ForceLegitParts) validParts = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
                 else {
                     validParts = InventorySerialDatabase.GetValidPartsForParts("InventoryGenericPartData", SelectedSerial.GenericParts);
+                    var vx = InventorySerialDatabase.GetValidPartsForParts("InventoryGenericPartData", SelectedSerial.Parts);
+                    var validGenerics = InventorySerialDatabase.GetValidGenericsForBalance(SelectedSerial.Balance);
+
+                    var itemType = InventoryKeyDB.ItemTypeToKey.LastOrDefault(x => x.Value.Contains(SelectedSerial.InventoryKey)).Key;
+                    bool bHasMayhem = (itemType == null);
+                    if (itemType != null) {
+                        // Only certain item types can be anointed...
+                        bHasMayhem = (itemType != "Grenades" && itemType != "Shields" && itemType != "Class Mods" && itemType != "Artifacts" && itemType != "Eridian Fabricator" && itemType != "Customizations");
+                    }
+
+                    // Filter out all parts that can't be contained from the balance
+                    validParts = validParts.Where(x => validGenerics.Contains(x) || (bHasMayhem && x.Contains("WeaponMayhemLevel_"))).ToList();
+
+                    // Filter out all the other invalid parts that can't be contained based off of the non-generic parts
+                    validParts = validParts.Where(x => vx.Contains(x) || (bHasMayhem && x.Contains("WeaponMayhemLevel_"))).ToList();
+
                 }
                 return new ListCollectionView(validParts.Select(x => x.Split('.').Last()).ToList());
             }
@@ -286,31 +313,44 @@ namespace BL3SaveEditor {
         }
 
         private void OpenSaveBtn_Click(object sender, RoutedEventArgs e) {
-            OpenFileDialog fileDialog = new OpenFileDialog {
-                Title = "Select BL3 Save/Profile",
-                Filter = "BL3 Save/Profile (*.sav)|*.sav",
-                InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames")
+
+            Dictionary<Platform, string> PlatformFilters = new Dictionary<Platform, string>() {
+                { Platform.PC, "PC BL3 Save/Profile (*.sav)|*.sav" },
+                { Platform.PS4, "PS4 BL3 Save/Profile (*.sav)|*.sav" }
             };
 
-            if (fileDialog.ShowDialog() == true)
-                OpenSave(fileDialog.FileName);
+            OpenFileDialog fileDialog = new OpenFileDialog {
+                Title = "Select BL3 Save/Profile",
+                Filter = string.Join("|", PlatformFilters.Values),
+                InitialDirectory = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "Borderlands 3", "Saved", "SaveGames"),
+            };
+
+            if (fileDialog.ShowDialog() == true) {
+                Platform platform = PlatformFilters.Keys.ToArray()[fileDialog.FilterIndex - 1];
+                OpenSave(fileDialog.FileName, platform);
+            }
         }
 
-        private void OpenSave(string filePath) {
+        private void OpenSave(string filePath, Platform platform = Platform.PC) {
             try {
                 // Reload the save just for safety, this way we're getting the "saved" version on a save...
-                object saveObj = BL3Tools.BL3Tools.LoadFileFromDisk(filePath);
+                object saveObj = BL3Tools.BL3Tools.LoadFileFromDisk(filePath, platform);
                 Console.WriteLine($"Reading a save of type: {saveObj.GetType()}");
 
                 if (saveObj.GetType() == typeof(BL3Profile)) {
                     profile = (BL3Profile)saveObj;
                     saveGame = null;
                     bSaveLoaded = false;
+                    // Profile tab
+                    TabCntrl.SelectedIndex = 5;
+
                 }
                 else {
                     saveGame = (BL3Save)saveObj;
                     profile = null;
                     bSaveLoaded = true;
+                    // General tab
+                    TabCntrl.SelectedIndex = 0;
                 }
 
             ((TabItem)FindName("RawTabItem")).IsEnabled = true;
@@ -614,7 +654,7 @@ namespace BL3SaveEditor {
                 // Set a manufacturer so that way the bindings don't lose their mind
                 serial.Manufacturer = InventorySerialDatabase.GetManufacturers().FirstOrDefault();
 
-                if (profile == null) saveGame.InventoryItems.Add(serial);
+                if (profile == null) saveGame.AddItem(serial);
                 else profile.BankItems.Add(serial);
 
                 BackpackListView.ItemsSource = null;
@@ -629,11 +669,7 @@ namespace BL3SaveEditor {
                 Borderlands3Serial item = Borderlands3Serial.DecryptSerial(serialCode);
                 if (item == null) return;
 
-                // Since we've added a new item, set the original data to null...
-                item.OriginalData = null;
-
-
-                if (profile == null) saveGame.InventoryItems.Add(item);
+                if (profile == null) saveGame.AddItem(item);
                 else profile.BankItems.Add(item);
 
                 BackpackListView.ItemsSource = null;
@@ -707,25 +743,27 @@ namespace BL3SaveEditor {
             PasteCodeBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
         private void DeleteBinding_Executed(object sender, ExecutedRoutedEventArgs e) {
-            StringSerialPair svp = (StringSerialPair)BackpackListView.SelectedValue;
+            StringSerialPair svp = BackpackListView.SelectedValue as StringSerialPair;
+            if (svp == null) return;
 
             Console.WriteLine("Deleting item: {0} ({1})", svp.Val1, svp.Val2.UserFriendlyName);
+            int idx = (saveGame == null ? profile.BankItems.FindIndex(x => ReferenceEquals(x, svp.Val2)) :
+                saveGame.InventoryItems.FindIndex(x => ReferenceEquals(x, svp.Val2)));
             if (saveGame == null)
-                profile.BankItems.RemoveAt(BackpackListView.SelectedIndex);
+                profile.BankItems.RemoveAt(idx);
             else {
-                int indx = BackpackListView.SelectedIndex;
 
                 // We need to preemptively adjust the equipped inventory lists so that way the equipped items stay consistent with the removed items.
                 //? Consider putting this into BL3Tools instead?
                 int eilIndex = saveGame.InventoryItems.FindIndex(x => ReferenceEquals(x, svp.Val2));
-                foreach(var vx in saveGame.Character.EquippedInventoryLists) {
-                    if (vx.InventoryListIndex == eilIndex) 
+                foreach (var vx in saveGame.Character.EquippedInventoryLists) {
+                    if (vx.InventoryListIndex == eilIndex)
                         vx.InventoryListIndex = -1;
-                    else if(vx.InventoryListIndex > eilIndex)
+                    else if (vx.InventoryListIndex > eilIndex)
                         vx.InventoryListIndex -= 1;
                 }
 
-                saveGame.InventoryItems.RemoveAt(indx);
+                saveGame.DeleteItem(svp.Val2);
                 if (saveGame.InventoryItems.Count <= 0) {
                     SelectedSerial = null;
                 }
