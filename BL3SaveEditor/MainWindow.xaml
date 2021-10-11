@@ -539,23 +539,21 @@
                             HorizontalAlignment="Stretch">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,-10,0,0">
-                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-
-
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}">
                                 <Label FontWeight="Normal" Content="Level: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"
                                         Width="100" Height="25" />
                                 <xctk:IntegerUpDown Value="{Binding Path=SelectedSerial.Level}" Minimum="0"
                                         Maximum="{Binding Path=maximumXP}" HorizontalAlignment="Stretch"
-                                        Margin="115,10,10,0" VerticalAlignment="Top"
-                                        IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
+                                        Margin="115,10,10,0" VerticalAlignment="Top"/>
                                 <Label FontWeight="Normal" Content="Mayhem Level: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"
                                         Width="100" Height="20" />
                                 <xctk:IntegerUpDown
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
+
                                         HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
                                         ValueChanged="IntegerUpDown_ValueChanged">
                                     <xctk:IntegerUpDown.IsEnabled>

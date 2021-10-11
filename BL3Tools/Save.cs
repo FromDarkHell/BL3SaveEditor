@@ -119,6 +119,28 @@ namespace BL3Tools {
 
             BankItems = Profile.BankInventoryLists.Select(x => Borderlands3Serial.DecryptSerial(x)).ToList();
             LostLootItems = Profile.LostLootInventoryLists.Select(x => Borderlands3Serial.DecryptSerial(x)).ToList();
+
+            for(int i = 0; i < BankItems.Count - 1; i++) {
+                Borderlands3Serial item = BankItems[i];
+                item.OriginalData = new OakInventoryItemSaveGameData() {
+                    DevelopmentSaveData = null,
+                    Flags = 0x00,
+                    ItemSerialNumber = Profile.BankInventoryLists[i],
+                    PickupOrderIndex = -1,
+                    WeaponSkinPath = ""
+                };
+            }
+
+            for (int i = 0; i < LostLootItems.Count - 1; i++) {
+                Borderlands3Serial item = LostLootItems[i];
+                item.OriginalData = new OakInventoryItemSaveGameData() {
+                    DevelopmentSaveData = null,
+                    Flags = 0x00,
+                    ItemSerialNumber = Profile.LostLootInventoryLists[i],
+                    PickupOrderIndex = -1,
+                    WeaponSkinPath = ""
+                };
+            }
         }
 
         /// <summary>

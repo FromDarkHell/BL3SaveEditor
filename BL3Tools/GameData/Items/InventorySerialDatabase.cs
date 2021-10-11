@@ -105,6 +105,7 @@ namespace BL3Tools.GameData.Items {
         /// <param name="version">Version of the item that you want to eat the bits of</param>
         /// <returns></returns>
         public static int GetBitsToEat(string category, long version) {
+
             JArray versionArray = ((JArray)InventoryDatabase[category]["versions"]);
             var minimumBits = versionArray.First["bits"].Value<int>();
 

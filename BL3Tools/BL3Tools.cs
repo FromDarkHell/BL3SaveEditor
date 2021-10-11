@@ -7,6 +7,7 @@ using BL3Tools.Decryption;
 using OakSave;
 using System.Linq;
 using BL3Tools.GameData.Items;
+using System.Collections.Generic;
 
 namespace BL3Tools {
 
@@ -138,10 +139,10 @@ namespace BL3Tools {
                             BL3Profile vx = (BL3Profile)saveGame;
 
                             vx.Profile.BankInventoryLists.Clear();
-                            vx.Profile.BankInventoryLists.AddRange(vx.BankItems.Select(x => x.EncryptSerialToBytes()));
+                            vx.Profile.BankInventoryLists.AddRange(vx.BankItems.Select(x => x.InventoryKey == null ? x.OriginalData.ItemSerialNumber : x.EncryptSerialToBytes()));
 
                             vx.Profile.LostLootInventoryLists.Clear();
-                            vx.Profile.LostLootInventoryLists.AddRange(vx.LostLootItems.Select(x => x.EncryptSerialToBytes()));
+                            vx.Profile.LostLootInventoryLists.AddRange(vx.LostLootItems.Select(x => x.InventoryKey == null ? x.OriginalData.ItemSerialNumber : x.EncryptSerialToBytes()));
 
                             Serializer.Serialize(stream, vx.Profile);
                             result = stream.ToArray();

@@ -58,8 +58,8 @@ namespace BL3Tools.GameData.Items {
         public int AmountRerolled { get; set; } = 0;
 
         /// <summary>
-        /// Used when loading a serial from a save
-        /// This data is automatically set when added to a save
+        /// Used when loading a serial from a save/profile; Do not touch this!!
+        /// This data is automatically set when loaded from a save
         /// </summary>
         public OakSave.OakInventoryItemSaveGameData OriginalData { get; set; } = null;
 
