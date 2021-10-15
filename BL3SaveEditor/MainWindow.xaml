@@ -142,8 +142,10 @@
                     <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Left" Margin="10,10,0,0"
                             VerticalAlignment="Top" Width="101" Height="25" VerticalContentAlignment="Center" />
 
-                    <ComboBox Margin="116,10,328,458" ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
-                            SelectedValue="{Binding Path=saveGame.Platform}" />
+                    <ComboBox Margin="116,10,328,0" Height="25"
+                            ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
+                            SelectedValue="{Binding Path=saveGame.Platform}" VerticalAlignment="Top"
+                            HorizontalAlignment="Stretch" />
                 </Grid>
             </TabItem>
             <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}">
@@ -546,14 +548,13 @@
                                         Width="100" Height="25" />
                                 <xctk:IntegerUpDown Value="{Binding Path=SelectedSerial.Level}" Minimum="0"
                                         Maximum="{Binding Path=maximumXP}" HorizontalAlignment="Stretch"
-                                        Margin="115,10,10,0" VerticalAlignment="Top"/>
+                                        Margin="115,10,10,0" VerticalAlignment="Top" />
                                 <Label FontWeight="Normal" Content="Mayhem Level: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"
                                         Width="100" Height="20" />
                                 <xctk:IntegerUpDown
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
-
                                         HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
                                         ValueChanged="IntegerUpDown_ValueChanged">
                                     <xctk:IntegerUpDown.IsEnabled>
@@ -658,8 +659,7 @@
                                             VerticalAlignment="Stretch" Margin="0,31,10,39">
                                         <ListView Name="PartsListView" VerticalAlignment="Top"
                                                 ScrollViewer.CanContentScroll="False" SelectionMode="Single"
-                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}"
-                                                Height="215">
+                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=Parts}">
                                             <ListView.Resources>
                                                 <helpers:CalcConverter x:Key="CalcConverter" />
                                             </ListView.Resources>
@@ -691,11 +691,11 @@
                                         </ListView>
                                     </Grid>
 
-                                    <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Left"
-                                            Margin="185,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
+                                    <Button Content="Delete" Name="PartsDelBtn" HorizontalAlignment="Right"
+                                            Margin="185,0,10,10" VerticalAlignment="Bottom" Width="75" Height="24"
                                             Grid.Column="0" Click="DeleteItemPartBtn_Click"
                                             IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
-                                    <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Right"
+                                    <Button Content="Add" Name="PartsAddBtn" HorizontalAlignment="Left"
                                             Margin="0,0,202,10" VerticalAlignment="Bottom" Width="68" Height="24"
                                             Grid.Column="0" Click="AddItemPartBtn_Click">
                                         <Button.IsEnabled>
@@ -715,8 +715,7 @@
                                                 DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}"
                                                 VerticalAlignment="Top" ScrollViewer.CanContentScroll="True"
                                                 SelectionMode="Single"
-                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}"
-                                                Height="215">
+                                                ItemsSource="{Binding Path=SelectedSerial, Converter={StaticResource MainPartConverter1}, ConverterParameter=GenericParts}">
                                             <ListView.Resources>
                                                 <helpers:CalcConverter x:Key="CalcConverter" />
                                             </ListView.Resources>
@@ -748,12 +747,12 @@
                                         </ListView>
                                     </Grid>
 
-                                    <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Left"
+                                    <Button Content="Delete" Name="GenericPartsDelBtn" HorizontalAlignment="Right"
                                             Margin="195,0,0,10" VerticalAlignment="Bottom" Width="75" Height="24"
                                             Grid.Column="1" Click="DeleteItemPartBtn_Click"
                                             IsEnabled="{Binding Path=SelectedSerial.InventoryKey, TargetNullValue=False}" />
-                                    <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Right"
-                                            Margin="0,0,192,10" VerticalAlignment="Bottom" Width="68" Height="24"
+                                    <Button Content="Add" Name="GenericPartsAddBtn" HorizontalAlignment="Left"
+                                            Margin="10,0,192,10" VerticalAlignment="Bottom" Width="68" Height="24"
                                             Grid.Column="1" Click="AddItemPartBtn_Click">
                                         <Button.IsEnabled>
                                             <MultiBinding Converter="{StaticResource AndConverter1}">
@@ -838,8 +837,8 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Expander IsExpanded="True" Header="Customizations" Margin="0,38,10,360" HorizontalAlignment="Right"
-                            Width="399">
+                    <Expander IsExpanded="True" Header="Customizations" Margin="0,38,10,0" HorizontalAlignment="Right"
+                            Width="399" Height="110" VerticalAlignment="Top">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0">
                             <Button Content="Unlock Room Decorations" Margin="0,0,244,55" HorizontalAlignment="Right"
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="UnlockRoomDeco_Click" />
@@ -907,10 +906,11 @@
                             Value="{Binding profile.Profile, ConverterParameter=DiamondKeys, Converter={StaticResource KeyToIntegerConverter1}, Mode=TwoWay}"
                             HorizontalAlignment="Right" Margin="0,294,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of diamond keys for your profile" Width="254" />
-                    <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Left" VerticalAlignment="Top"
-                            Width="99" Height="26" VerticalContentAlignment="Center" Margin="440,7,0,0" />
+                    <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Width="99" Height="26" VerticalContentAlignment="Center" Margin="0,5,310,0" />
                     <ComboBox ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
-                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,476" />
+                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,0" VerticalAlignment="Top"
+                            Height="26" HorizontalAlignment="Stretch" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">
