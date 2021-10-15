@@ -142,8 +142,10 @@
                     <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Left" Margin="10,10,0,0"
                             VerticalAlignment="Top" Width="101" Height="25" VerticalContentAlignment="Center" />
 
-                    <ComboBox Margin="116,10,328,458" ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
-                            SelectedValue="{Binding Path=saveGame.Platform}" VerticalAlignment="Top" />
+                    <ComboBox Margin="116,10,328,0" Height="25"
+                            ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
+                            SelectedValue="{Binding Path=saveGame.Platform}" VerticalAlignment="Top"
+                            HorizontalAlignment="Stretch" />
                 </Grid>
             </TabItem>
             <TabItem IsEnabled="{Binding saveGame, TargetNullValue=False}">
@@ -546,14 +548,13 @@
                                         Width="100" Height="25" />
                                 <xctk:IntegerUpDown Value="{Binding Path=SelectedSerial.Level}" Minimum="0"
                                         Maximum="{Binding Path=maximumXP}" HorizontalAlignment="Stretch"
-                                        Margin="115,10,10,0" VerticalAlignment="Top"/>
+                                        Margin="115,10,10,0" VerticalAlignment="Top" />
                                 <Label FontWeight="Normal" Content="Mayhem Level: " VerticalContentAlignment="Center"
                                         HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"
                                         Width="100" Height="20" />
                                 <xctk:IntegerUpDown
                                         Value="{Binding SelectedSerial, Converter={StaticResource IntegerToMayhemLevelConverter1}}"
                                         Minimum="0" Maximum="{Binding Path=maximumMayhemLevel}"
-
                                         HorizontalAlignment="Stretch" Margin="115,35,10,0" VerticalAlignment="Top"
                                         ValueChanged="IntegerUpDown_ValueChanged">
                                     <xctk:IntegerUpDown.IsEnabled>
@@ -836,8 +837,8 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Expander IsExpanded="True" Header="Customizations" Margin="0,38,10,360" HorizontalAlignment="Right"
-                            Width="399">
+                    <Expander IsExpanded="True" Header="Customizations" Margin="0,38,10,0" HorizontalAlignment="Right"
+                            Width="399" Height="110" VerticalAlignment="Top">
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0">
                             <Button Content="Unlock Room Decorations" Margin="0,0,244,55" HorizontalAlignment="Right"
                                     Width="155" Height="30" VerticalAlignment="Bottom" Click="UnlockRoomDeco_Click" />
@@ -908,7 +909,8 @@
                     <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Right" VerticalAlignment="Top"
                             Width="99" Height="26" VerticalContentAlignment="Center" Margin="0,5,310,0" />
                     <ComboBox ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
-                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,476" VerticalAlignment="Top" Width="300" HorizontalAlignment="Right" />
+                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,0" VerticalAlignment="Top"
+                            Height="26" HorizontalAlignment="Stretch" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">
