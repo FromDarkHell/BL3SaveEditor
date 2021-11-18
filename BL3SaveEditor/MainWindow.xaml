@@ -235,7 +235,7 @@
                             <Label FontWeight="Normal" Content="Color 1: " VerticalAlignment="Top"
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
                                     Margin="11,98,0,0" HorizontalAlignment="Left" Width="55" Height="22" />
-                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="False"
+                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="True"
                                     ToolTip="Sadly BL3 doesn't support RGB for colors; It will be converted to what BL3 considers the closest color."
                                     Margin="155,98,0,0" RenderTransformOrigin="0.455,0.826"
                                     IsEnabled="{Binding bSaveLoaded}"
@@ -247,13 +247,13 @@
                             <Label FontWeight="Normal" VerticalAlignment="Top" Content="Color 3: "
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
                                     Margin="11,151,0,0" HorizontalAlignment="Left" Width="55" Height="22" />
-                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="False"
+                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="True"
                                     ToolTip="Sadly BL3 doesn't support RGB for colors; It will be converted to what BL3 considers the closest color."
                                     Margin="155,125,0,0" RenderTransformOrigin="0.455,0.826"
                                     IsEnabled="{Binding bSaveLoaded}"
-                                    SelectedColor="{Binding saveGame.Character.SelectedColorCustomizations[0], ConverterParameter=*Color_Secondary1, Converter={StaticResource CustomPlayerColorToColorConverter1}, Mode=TwoWay}"
+                                    SelectedColor="{Binding saveGame.Character.SelectedColorCustomizations[1], ConverterParameter=*Color_Secondary1, Converter={StaticResource CustomPlayerColorToColorConverter1}, Mode=TwoWay}"
                                     HorizontalAlignment="Left" Width="271" />
-                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="False"
+                            <xctk:ColorPicker VerticalAlignment="Top" UsingAlphaChannel="True"
                                     ToolTip="Sadly BL3 doesn't support RGB for colors; It will be converted to what BL3 considers the closest color."
                                     Margin="155,151,0,0" RenderTransformOrigin="0.455,0.826"
                                     IsEnabled="{Binding bSaveLoaded}"
@@ -907,10 +907,10 @@
                             HorizontalAlignment="Right" Margin="0,294,10,0" VerticalAlignment="Top"
                             ToolTip="Amount of diamond keys for your profile" Width="254" />
                     <Label FontWeight="Normal" Content="Platform:" HorizontalAlignment="Right" VerticalAlignment="Top"
-                            Width="99" Height="26" VerticalContentAlignment="Center" Margin="0,5,310,0" />
+                            Width="61" Height="26" VerticalContentAlignment="Center" Margin="0,5,348,0" />
                     <ComboBox ItemsSource="{Binding Source={StaticResource PlatformDataSource}}"
-                            SelectedValue="{Binding Path=profile.Platform}" Margin="539,7,10,0" VerticalAlignment="Top"
-                            Height="26" HorizontalAlignment="Stretch" />
+                            SelectedValue="{Binding Path=profile.Platform}" Margin="0,7,10,0" VerticalAlignment="Top"
+                            Height="26" HorizontalAlignment="Right" Width="254" />
                 </Grid>
             </TabItem>
             <TabItem HorizontalAlignment="Left">

@@ -146,6 +146,8 @@ namespace BL3SaveEditor.Helpers {
 
             if (value != null) {
                 CustomPlayerColorSaveGameData colorData = (CustomPlayerColorSaveGameData)value;
+                if (colorData.UseDefaultColor || colorData.UseDefaultSplitColor) 
+                    return Color.FromArgb(0, 0, 0, 0);
                 byte r = System.Convert.ToByte(colorData.AppliedColor.X * 255);
                 byte g = System.Convert.ToByte(colorData.AppliedColor.Y * 255);
                 byte b = System.Convert.ToByte(colorData.AppliedColor.Z * 255);
@@ -170,8 +172,8 @@ namespace BL3SaveEditor.Helpers {
                     ColorParameter = System.Convert.ToString(parameter),
                     AppliedColor = vecClr,
                     SplitColor = vecClr,
-                    UseDefaultColor = false,
-                    UseDefaultSplitColor = false
+                    UseDefaultColor = clr.A < 255,
+                    UseDefaultSplitColor = clr.A < 255
                 };
 
                 return colorData;
