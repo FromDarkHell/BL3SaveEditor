@@ -15940,14 +15940,6 @@
         "Dependencies": [],
         "Excluders": []
     },
-    "/Game/PatchDLC/Steam/Gear/Weapons/SteamGun/Parts/Part_SM_HYP_Barrel_ShortStick.Part_SM_HYP_Barrel_ShortStick": {
-        "Dependencies": [],
-        "Excluders": []
-    },
-    "/Game/PatchDLC/Steam/Gear/Weapons/SteamGun/Parts/Part_SM_HYP_Material_ShortStick.Part_SM_HYP_Material_ShortStick": {
-        "Dependencies": [],
-        "Excluders": []
-    },
     "/Game/PatchDLC/Takedown2/Gear/GrenadeMods/Lightspeed/Parts/Part_GM_Aug_Lightspeed.Part_GM_Aug_Lightspeed": {
         "Dependencies": [],
         "Excluders": []
@@ -16047,6 +16039,58 @@
     "/Game/PatchDLC/VaultCard2/Gear/Weapons/Unique/Troubleshooter/Parts/Part_SM_HYP_Grip_03_Troubleshooter.Part_SM_HYP_Grip_03_Troubleshooter": {
         "Dependencies": [],
         "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/GrenadeMods/Unique/Bloodsucker/Parts/Part_GM_Aug_Bloodsucker.Part_GM_Aug_Bloodsucker": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/GrenadeMods/Unique/Sidewinder/Parts/Part_GM_Aug_Sidewinder.Part_GM_Aug_Sidewinder": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Shields/Unique/Manawell/Parts/Part_Shield_Aug_Manawell.Part_Shield_Aug_Manawell": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/BladeFury/Parts/Part_AR_JAK_Barrel_BladeFury.Part_AR_JAK_Barrel_BladeFury": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/BladeFury/Parts/Part_AR_JAK_Bolt_BladeFury.Part_AR_JAK_Bolt_BladeFury": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/BladeFury/Parts/Part_AR_JAK_Trigger_04_BladeFury.Part_AR_JAK_Trigger_04_BladeFury": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/Corruption/Parts/Part_DAL_AR_Barrel_Corruption.Part_DAL_AR_Barrel_Corruption": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/TinyTinaGun/Parts/Part_PS_TOR_Barrel_TinyTinaGun.Part_PS_TOR_Barrel_TinyTinaGun": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/TinyTinaGun/Parts/Part_PS_TOR_Body_TinyTinaGun.Part_PS_TOR_Body_TinyTinaGun": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/TinyTinaGun/Parts/Part_PS_TOR_Mag_TinyTinaGun_5.Part_PS_TOR_Mag_TinyTinaGun_5": {
+        "Dependencies": [],
+        "Excluders": []
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/TinyTinaGun/Parts/Part_PS_TOR_Mag_TinyTinaGun_6.Part_PS_TOR_Mag_TinyTinaGun_6": {
+        "Dependencies": [],
+        "Excluders": [
+            "/Game/Gear/Weapons/Pistols/Torgue/_Shared/_Design/_Unique/Echo/Parts/Part_PS_TOR_Barrel_Mod_Breeder.Part_PS_TOR_Barrel_Mod_Breeder"
+        ]
+    },
+    "/Game/PatchDLC/VaultCard3/Gear/Weapons/Unique/TinyTinaGun/Parts/Part_PS_TOR_Mag_TinyTinaGun_8.Part_PS_TOR_Mag_TinyTinaGun_8": {
+        "Dependencies": [],
+        "Excluders": [
+            "/Game/Gear/Weapons/Pistols/Torgue/_Shared/_Design/_Unique/Echo/Parts/Part_PS_TOR_Barrel_Mod_Breeder.Part_PS_TOR_Barrel_Mod_Breeder"
+        ]
     },
     "/Game/PlayerCharacters/Beastmaster/Pet/Monkey/_Design/Weapons/JabberWeaponBase/Part_PS_JAK_Barrel_JabberWeaponBase.Part_PS_JAK_Barrel_JabberWeaponBase": {
         "Dependencies": [],

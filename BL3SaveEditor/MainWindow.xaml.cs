@@ -301,7 +301,7 @@ namespace BL3SaveEditor {
 
             ((TabControl)FindName("TabCntrl")).SelectedIndex = ((TabControl)FindName("TabCntrl")).Items.Count - 1;
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
-
+            AutoUpdater.RunUpdateAsAdmin = true;
 #if !DEBUG
             AutoUpdater.Start(UpdateURL);
 #endif
@@ -980,7 +980,6 @@ namespace BL3SaveEditor {
         }
 
         #region Customization Unlockers/Lockers
-        // TODO: Implement customization unlockers
 
         private void UnlockRoomDeco_Click(object sender, RoutedEventArgs e) {
             List<string> decos = DataPathTranslations.decoAssetPaths.Keys.ToList();
