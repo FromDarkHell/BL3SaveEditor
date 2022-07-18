@@ -36,6 +36,7 @@ namespace BL3Tools.GameData.Items {
     // - BL3(AwAAAACxlIC1y1QBE0QesjkdMfnY444QAAAAAACADAg=)
     // - BL3(AwAAAAA4jIA5lMPiFgAAAA==) :: Customization
     // - BL3(AwAAAAChWIC5UhEHFgAAAA==) :: Customization
+    // - BL3(AwAAAAB8zICZyMsgAo7jAYk0GZPSKXTprJyAEAAAAAAAAAAA) :: EM-P5 at database version 25 - add an anoint to force it to upgrade
 
     /// <summary>
     /// A class representing a Borderlands 3 Serial Item
@@ -139,7 +140,7 @@ namespace BL3Tools.GameData.Items {
 
             // Encrypt the data
             BogoEncrypt(seed, buffer, 0, buffer.Length);
-            
+
             // Slap the serial version & seed onto the start
             buffer = Helpers.ConcatArrays(header, buffer);
 
@@ -172,7 +173,7 @@ namespace BL3Tools.GameData.Items {
 
             IOWrapper serialIO = new IOWrapper(serial, Endian.Big, 1);
             uint originalSeed = serialIO.ReadUInt32();
-            
+
             // Copy the decrypted serial into a new buffer
             int decryptedSize = (int)(serial.Length - serialIO.Position);
             byte[] decrypted = new byte[decryptedSize];
@@ -182,7 +183,7 @@ namespace BL3Tools.GameData.Items {
             BogoDecrypt(originalSeed, decrypted, 0, decryptedSize);
 
             IOWrapper decryptedSerialIO = new IOWrapper(decrypted, Endian.Big, 0);
-            
+
             // Read in the original checksum
             ushort originalChecksum = decryptedSerialIO.ReadUInt16();
 
@@ -192,7 +193,7 @@ namespace BL3Tools.GameData.Items {
 
             byte[] checksumBuffer = Helpers.ConcatArrays(new byte[] {
                 serial[0], // Serial Version
-                serial[1], serial[2], serial[3], serial[4], // Seed 
+                serial[1], serial[2], serial[3], serial[4], // Seed
                 0xFF, 0xFF // When calculating, the preset checksum is 0xFF
             }, remaining); // Append the remaining (unencrypted) data
 
@@ -239,11 +240,11 @@ namespace BL3Tools.GameData.Items {
 
                 // Both Anointments & Mayhem mode are currently stored in InventoryGenericPartData
                 genericParts = EatBitArrayForCategory(reader, "InventoryGenericPartData", SerialDatabaseVersion, 4);
-                
+
                 // Some other stuff is apparently probably in here, no idea what or why (:
                 int additionalCount = reader.ReadInt32(8);
                 additionalData = new List<int>();
-                for (int i = 0; i < additionalCount; i++) 
+                for (int i = 0; i < additionalCount; i++)
                     additionalData.Add(reader.ReadInt32(8));
 
                 try {
@@ -268,7 +269,7 @@ namespace BL3Tools.GameData.Items {
             var nameParts = parts.Select(x => (string)x.Clone()).ToList();
             nameParts.Add(balance);
             string userFriendlyName = InventoryNameDatabase.GetNameForParts(nameParts);
-            
+
             // This means we've got some sort of item that we don't know entirely have info on...
             if (string.IsNullOrEmpty(userFriendlyName)) userFriendlyName = shortBalance;
 
@@ -340,28 +341,48 @@ namespace BL3Tools.GameData.Items {
             return partValue;
         }
 
+        public void ValidateSerialDatabaseVersion(string category, string part) {
+            int bits = InventorySerialDatabase.GetBitsToEat(category, SerialDatabaseVersion);
+            int index = InventorySerialDatabase.GetIndexByPart(category, part);
+
+            if (index > 0 && (ulong)index > BitWriter.MaxValueForBitCount[bits]) {
+                SerialDatabaseVersion = (int)InventorySerialDatabase.MaximumVersion;
+            }
+        }
+
         public void ValidateFields() {
-            string fullName = InventorySerialDatabase.GetBalanceFromShortName(this.Balance);
-            if (fullName != null) 
-                this.Balance = fullName;
+            string fullName = InventorySerialDatabase.GetBalanceFromShortName(Balance);
+            if (fullName != null) {
+                Balance = fullName;
+            }
+            ValidateSerialDatabaseVersion("InventoryBalanceData", Balance);
 
             string invData = InventorySerialDatabase.GetInventoryDatas(false).FirstOrDefault(x => x.EndsWith(InventoryData));
-            if (!string.IsNullOrEmpty(invData)) 
-                this.InventoryData = invData;
-            
+            if (!string.IsNullOrEmpty(invData)) {
+                InventoryData = invData;
+            }
+            ValidateSerialDatabaseVersion("InventoryData", InventoryData);
+
             string manu = InventorySerialDatabase.GetManufacturers(false).FirstOrDefault(x => x.EndsWith(Manufacturer));
-            if (!string.IsNullOrEmpty(manu))
-                this.Manufacturer = manu;
+            if (!string.IsNullOrEmpty(manu)) {
+                Manufacturer = manu;
+            }
+            ValidateSerialDatabaseVersion("ManufacturerData", Manufacturer);
+
             this.InventoryKey = InventoryKeyDB.GetKeyForBalance(Balance);
-
-            if(InventoryKey != null) {
+            if (InventoryKey != null) {
                 var validParts = InventorySerialDatabase.GetPartsForInvKey(InventoryKey);
-                this.Parts.RemoveAll(x => !validParts.Contains(x));
-
-                var validGenerics = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
-                this.GenericParts.RemoveAll(x => !GenericParts.Contains(x));
+                Parts.RemoveAll(x => !validParts.Contains(x));
+                foreach (var part in Parts) {
+                    ValidateSerialDatabaseVersion(InventoryKey, part);
+                }
             }
 
+            var validGenerics = InventorySerialDatabase.GetPartsForInvKey("InventoryGenericPartData");
+            GenericParts.RemoveAll(x => !validGenerics.Contains(x));
+            foreach (var part in GenericParts) {
+                ValidateSerialDatabaseVersion("InventoryGenericPartData", part);
+            }
         }
 
         // Credits to Rick/Gibbed for the BogoEncrypt functions from their BL2 save editor:
